@@ -1,0 +1,161 @@
+{
+    "meta": {
+        "title": "Customer Support Escalation",
+        "description": "Navigate the customer support escalation process based on issue type and severity",
+        "author": "Paolo Dalprato"
+    },
+    "translations": {
+        "step": "Step",
+        "restart": "Start New Case",
+        "endOfPath": "Resolution Path Complete",
+        "resources": "Resources",
+        "viewMap": "View Process Map",
+        "mapOf": "Process Map:",
+        "back": "Back",
+        "download": "Download",
+        "openLink": "Open",
+        "watchVideo": "Watch"
+    },
+    "startNode": "start",
+    "nodes": {
+        "start": {
+            "content": "# Customer Support Escalation Process\n\nWelcome to the escalation workflow guide. This tool helps you navigate the correct path based on the customer's issue.\n\n**First, identify the issue category:**",
+            "choices": [
+                { "text": "Technical Issue", "next": "technical" },
+                { "text": "Billing Issue", "next": "billing" },
+                { "text": "Account Access Issue", "next": "account" }
+            ],
+            "resources": []
+        },
+        "technical": {
+            "content": "# Technical Issue\n\nYou've identified a technical issue. Let's determine the severity to route it correctly.\n\n**Is the customer's service completely down (outage)?**",
+            "choices": [
+                { "text": "Yes - Complete outage", "next": "tech_critical" },
+                { "text": "No - Partial or intermittent", "next": "tech_standard" }
+            ],
+            "resources": []
+        },
+        "tech_critical": {
+            "content": "# Critical Technical Issue - Priority 1\n\n> **Immediate escalation required**\n\nFor complete service outages:\n\n- Create a P1 ticket immediately\n- Notify the on-call engineer via PagerDuty\n- Inform the customer of the 1-hour response SLA\n- Stay on the line if the customer requests\n\n**Has the customer been notified and ticket created?**",
+            "choices": [
+                { "text": "Yes - Proceed to monitoring", "next": "tech_critical_monitor" },
+                { "text": "Customer requests manager", "next": "manager_escalation" }
+            ],
+            "resources": [
+                { "type": "link", "label": "P1 Ticket Template", "url": "docs/p1-template.pdf" },
+                { "type": "link", "label": "PagerDuty Dashboard", "url": "https://pagerduty.example.com" }
+            ]
+        },
+        "tech_critical_monitor": {
+            "content": "# Monitoring Critical Issue\n\nThe P1 ticket is now in progress.\n\n**Your responsibilities:**\n\n- Update the customer every 30 minutes\n- Document all communications in the ticket\n- Coordinate between customer and engineering\n\n**Resolution typically occurs within 4 hours.**\n\nOnce resolved, proceed to post-incident review.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Status Page Updates", "url": "https://status.example.com/admin" }
+            ]
+        },
+        "tech_standard": {
+            "content": "# Standard Technical Issue - Priority 2/3\n\nFor partial or intermittent issues:\n\n**Gather diagnostic information:**\n\n- Error messages or screenshots\n- When did the issue start?\n- What actions trigger the problem?\n- Has anything changed recently?\n\n**What's the business impact?**",
+            "choices": [
+                { "text": "Blocking customer's work", "next": "tech_p2" },
+                { "text": "Inconvenient but has workaround", "next": "tech_p3" }
+            ],
+            "resources": []
+        },
+        "tech_p2": {
+            "content": "# Priority 2 - Work Blocking Issue\n\nThis issue is blocking customer productivity.\n\n**Actions:**\n\n- Create P2 ticket with full diagnostics\n- Assign to next available engineer\n- Set expectation: response within 4 hours\n- Offer to schedule a callback\n\nCustomer will be contacted by the assigned engineer directly.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "P2 Ticket Template", "url": "docs/p2-template.pdf" }
+            ]
+        },
+        "tech_p3": {
+            "content": "# Priority 3 - Standard Issue\n\nThe customer has a workaround available.\n\n**Actions:**\n\n- Create P3 ticket with diagnostics\n- Add to standard queue\n- Set expectation: response within 24 hours\n- Provide knowledge base articles if relevant\n\nCustomer will receive email updates on progress.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Knowledge Base", "url": "https://kb.example.com" }
+            ]
+        },
+        "billing": {
+            "content": "# Billing Issue\n\nYou've identified a billing issue.\n\n**What type of billing issue is this?**",
+            "choices": [
+                { "text": "Incorrect charge", "next": "billing_charge" },
+                { "text": "Refund request", "next": "billing_refund" },
+                { "text": "Payment method update", "next": "billing_payment" }
+            ],
+            "resources": []
+        },
+        "billing_charge": {
+            "content": "# Incorrect Charge Investigation\n\n**Steps to investigate:**\n\n- Pull up customer's billing history\n- Compare charges against their subscription plan\n- Check for any usage overages\n- Review any recent plan changes\n\n**What did you find?**",
+            "choices": [
+                { "text": "Charge was an error - issue credit", "next": "billing_credit" },
+                { "text": "Charge was correct - explain to customer", "next": "billing_explain" }
+            ],
+            "resources": [
+                { "type": "link", "label": "Billing Admin Panel", "url": "https://billing.example.com/admin" }
+            ]
+        },
+        "billing_credit": {
+            "content": "# Issue Account Credit\n\n**For billing errors under $100:**\n- You can issue the credit directly\n- Document the reason in the account notes\n- Send confirmation email to customer\n\n**For amounts over $100:**\n- Requires supervisor approval\n- Submit credit request form\n- Customer will be notified within 24 hours\n\nCredit will appear on next statement.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Credit Request Form", "url": "docs/credit-request.pdf" }
+            ]
+        },
+        "billing_explain": {
+            "content": "# Explain Charges to Customer\n\n**Best practices for charge explanations:**\n\n- Be clear and patient\n- Break down each line item\n- Reference their contract/plan details\n- Offer to send a detailed invoice by email\n\n**If customer disputes the explanation:**\n\nOffer to have a billing specialist review the account and call them back within 24 hours.",
+            "choices": [],
+            "resources": []
+        },
+        "billing_refund": {
+            "content": "# Refund Request\n\n**Refund eligibility depends on:**\n\n- Subscription terms and cancellation policy\n- How long since the charge\n- Reason for the refund request\n\n**Standard policy:**\n- Full refund within 30 days of charge\n- Pro-rated after 30 days (case by case)\n- No refund for usage-based charges\n\nSubmit refund request to billing team for processing (3-5 business days).",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Refund Policy", "url": "docs/refund-policy.pdf" }
+            ]
+        },
+        "billing_payment": {
+            "content": "# Payment Method Update\n\nCustomer needs to update their payment method.\n\n**Direct them to:**\n\n1. Log into their account\n2. Go to Settings > Billing\n3. Click \"Update Payment Method\"\n4. Enter new card details\n\n**If customer cannot access their account**, go back and select \"Account Access Issue\".\n\n**If customer prefers phone update**, we cannot take card details by phone for security reasons - direct them to the secure online form.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Customer Billing Portal", "url": "https://account.example.com/billing" }
+            ]
+        },
+        "account": {
+            "content": "# Account Access Issue\n\nThe customer cannot access their account.\n\n**What's preventing access?**",
+            "choices": [
+                { "text": "Forgot password", "next": "account_password" },
+                { "text": "Account locked", "next": "account_locked" },
+                { "text": "Suspicious activity detected", "next": "account_security" }
+            ],
+            "resources": []
+        },
+        "account_password": {
+            "content": "# Password Reset\n\n**Standard password reset:**\n\n1. Direct customer to \"Forgot Password\" link\n2. Reset email sent to registered address\n3. Link valid for 24 hours\n\n**If customer doesn't receive the email:**\n\n- Check spam folder\n- Verify the email address on file\n- If needed, you can trigger a manual reset from the admin panel\n\n**Identity verification required** for manual resets: verify 2 of 3 (email, phone, last 4 of payment method).",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Admin Password Reset", "url": "https://admin.example.com/users" }
+            ]
+        },
+        "account_locked": {
+            "content": "# Account Locked\n\nAccounts lock after 5 failed login attempts.\n\n**Automatic unlock:** 30 minutes\n\n**Manual unlock:**\n\n1. Verify customer identity (2 of 3 factors)\n2. Unlock from admin panel\n3. Recommend password reset for security\n\n**If account was locked due to suspicious activity**, escalate to Security team - do not unlock manually.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Account Admin Panel", "url": "https://admin.example.com/users" }
+            ]
+        },
+        "account_security": {
+            "content": "# Security Escalation Required\n\n> **Do not make any account changes**\n\nSuspicious activity requires Security team review.\n\n**Immediate actions:**\n\n1. Create Security ticket with details\n2. Note the customer's contact information\n3. Inform customer: Security will contact within 2 hours\n4. Do NOT verify identity or make changes\n\nSecurity team will handle all further communication.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Security Ticket Form", "url": "https://security.example.com/report" }
+            ]
+        },
+        "manager_escalation": {
+            "content": "# Manager Escalation\n\nCustomer has requested to speak with a manager.\n\n**Before transferring:**\n\n- Document all steps taken so far\n- Note the customer's specific concerns\n- Check if a callback is acceptable\n\n**Transfer process:**\n\n1. Place customer on brief hold\n2. Contact available supervisor\n3. Provide full context before transfer\n4. Warm transfer (introduce the supervisor)\n\n**If no supervisor available:** Schedule callback within 2 hours.",
+            "choices": [],
+            "resources": [
+                { "type": "link", "label": "Supervisor On-Call Schedule", "url": "https://schedule.example.com/supervisors" }
+            ]
+        }
+    }
+}

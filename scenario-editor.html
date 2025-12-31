@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scenario Editor - Branching Navigator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; }
+        .editor-container { display: flex; height: 100vh; }
+        .sidebar { width: 280px; background: #16213e; border-right: 1px solid #2a2a4a; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 1rem; border-bottom: 1px solid #2a2a4a; }
+        .sidebar-header h1 { font-size: 1.25rem; margin: 0 0 0.5rem 0; color: #fff; }
+        .sidebar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .btn { padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-primary { background: #6366f1; color: white; }
+        .btn-primary:hover { background: #5558e3; }
+        .btn-secondary { background: #374151; color: #e0e0e0; }
+        .btn-secondary:hover { background: #4b5563; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; text-transform: uppercase; font-weight: 600; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-close { background: #ef4444; color: white; text-transform: uppercase; font-weight: 600; }
+        .btn-close:hover { background: #dc2626; }
+        .node-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
+        .node-item { padding: 0.75rem; margin-bottom: 0.5rem; background: #1a1a2e; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .node-item:hover { border-color: #4b5563; }
+        .node-item.selected { border-color: #6366f1; background: #1e1e3f; }
+        .node-item.start-node { border-left: 3px solid #10b981; }
+        .node-item.terminal { border-left: 3px solid #f59e0b; }
+        .node-title { font-weight: 600; color: #fff; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .node-id-small { font-size: 0.7rem; color: #6b7280; font-family: monospace; margin-top: 0.15rem; }
+        .node-badges { display: flex; gap: 0.25rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; background: #374151; color: #9ca3af; }
+        .badge-start { background: #065f46; color: #6ee7b7; }
+        .badge-terminal { background: #78350f; color: #fcd34d; }
+        .main-editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .editor-header { padding: 1rem; background: #16213e; border-bottom: 1px solid #2a2a4a; display: flex; justify-content: space-between; align-items: center; }
+        .lang-indicator { background: #3730a3; color: #a5b4fc; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; margin-left: 1rem; }
+        .editor-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
+        .form-section { background: #16213e; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; }
+        .form-section h3 { margin: 0 0 1rem 0; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 0.4rem; }
+        .form-input { width: 100%; padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #374151; background: #1a1a2e; color: #e0e0e0; font-size: 0.9rem; }
+        .form-input:focus { outline: none; border-color: #6366f1; }
+        .form-textarea { min-height: 120px; resize: vertical; font-family: monospace; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .form-row.single { grid-template-columns: 1fr; }
+        .choice-item, .resource-item { background: #1a1a2e; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid #374151; }
+        .choice-header, .resource-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .choice-number { font-size: 0.8rem; color: #6366f1; font-weight: 600; }
+        .form-select { padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #374151; background: #1a1a2e; color: #e0e0e0; font-size: 0.9rem; width: 100%; }
+        .form-select:focus { outline: none; border-color: #6366f1; }
+                .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: #16213e; border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; border: 1px solid #2a2a4a; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+        .modal-header h2, .modal-header h3 { margin: 0; color: #fff; }
+        .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
+        .empty-state h2 { color: #9ca3af; margin-bottom: 0.5rem; }
+        .status-bar { padding: 0.5rem 1rem; background: #0f0f1a; border-top: 1px solid #2a2a4a; font-size: 0.75rem; color: #6b7280; display: flex; justify-content: space-between; }
+        .status-saved { color: #10b981; }
+        .status-unsaved { color: #f59e0b; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        .hidden-input { display: none; }
+        .map-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 20, 0.95); z-index: 200; display: flex; flex-direction: column; }
+        .map-overlay-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #2a2a4a; background: #16213e; }
+        .map-overlay-header h2 { margin: 0; color: #fff; font-size: 1.25rem; }
+        .map-legend { display: flex; gap: 1.5rem; font-size: 0.8rem; color: #9ca3af; }
+        .map-legend span { display: flex; align-items: center; gap: 0.4rem; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 3px; border: 2px solid; }
+        .legend-start { border-color: #10b981; background: #065f46; }
+        .legend-terminal { border-color: #f59e0b; background: #78350f; }
+        .legend-selected { border-color: #818cf8; background: #3730a3; }
+        .legend-orphan { border-color: #ef4444; background: #7f1d1d; }
+        .map-overlay-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem; }
+        .welcome-screen h2 { color: #fff; font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .welcome-screen p { color: #9ca3af; margin-bottom: 2rem; max-width: 400px; }
+        .welcome-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+        .welcome-actions .btn { padding: 0.75rem 1.5rem; font-size: 1rem; }
+        .credits { position: fixed; bottom: 0.5rem; left: 0.5rem; color: rgba(255, 255, 255, 0.3); font-size: 0.65rem; z-index: 10; }
+        .credits a { color: rgba(255, 255, 255, 0.4); text-decoration: none; }
+        .credits a:hover { color: #6366f1; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // ============================================================
+        // DEFAULT DATA
+        // ============================================================
+        const defaultTranslations = {
+            step: 'Step',
+            restart: 'Start Over',
+            endOfPath: 'End of this path',
+            resources: 'Resources',
+            viewMap: 'View Map',
+            mapOf: 'Map of',
+            back: 'Back',
+            download: 'Download',
+            openLink: 'Open',
+            watchVideo: 'Watch'
+        };
+        
+        // ============================================================
+        // HELPER FUNCTIONS
+        // ============================================================
+        const calculateNodeLevels = (nodes, startNode) => {
+            const levels = {};
+            const visited = new Set();
+            const queue = [{ id: startNode, level: 1 }];
+            while (queue.length > 0) {
+                const { id, level } = queue.shift();
+                if (visited.has(id) || !nodes[id]) continue;
+                visited.add(id);
+                if (!levels[level]) levels[level] = [];
+                levels[level].push(id);
+                (nodes[id].choices || []).forEach(choice => {
+                    if (choice.next && !visited.has(choice.next)) queue.push({ id: choice.next, level: level + 1 });
+                });
+            }
+            Object.keys(nodes).forEach(id => { if (!visited.has(id)) { if (!levels[0]) levels[0] = []; levels[0].push(id); } });
+            return levels;
+        };
+        
+        const getNodeLevel = (nodeId, nodes, startNode) => {
+            const levels = calculateNodeLevels(nodes, startNode);
+            for (const [level, nodeIds] of Object.entries(levels)) {
+                if (nodeIds.includes(nodeId)) return { level: parseInt(level), position: nodeIds.indexOf(nodeId) + 1 };
+            }
+            return { level: 0, position: 1 };
+        };
+        
+        // ============================================================
+        // TREE MAP OVERLAY COMPONENT
+        // ============================================================
+        const TreeMapOverlay = ({ nodes, startNode, selectedNode, onSelectNode, onClose }) => {
+            const levels = calculateNodeLevels(nodes, startNode);
+            const maxLevel = Math.max(...Object.keys(levels).map(Number), 1);
+            // Tree layout constants (px): vertical spacing, horizontal spacing, node box height, SVG padding
+            const levelHeight = 120, nodeWidth = 140, nodeHeight = 44, padding = 60;
+            const positions = {};
+            let maxWidth = 0;
+            Object.entries(levels).forEach(([level, nodeIds]) => { maxWidth = Math.max(maxWidth, nodeIds.length * nodeWidth); });
+            Object.entries(levels).forEach(([level, nodeIds]) => {
+                const totalWidth = nodeIds.length * nodeWidth;
+                const startX = (maxWidth - totalWidth) / 2 + nodeWidth / 2;
+                nodeIds.forEach((nodeId, index) => { positions[nodeId] = { x: startX + index * nodeWidth + padding, y: parseInt(level) * levelHeight + padding }; });
+            });
+            const connections = [];
+            Object.entries(nodes).forEach(([nodeId, node]) => {
+                if (node.choices && positions[nodeId]) {
+                    node.choices.forEach(choice => { if (choice.next && positions[choice.next]) connections.push({ from: positions[nodeId], to: positions[choice.next] }); });
+                }
+            });
+            const isTerminal = (nodeId) => !nodes[nodeId]?.choices || nodes[nodeId].choices.length === 0;
+            const isOrphan = (nodeId) => getNodeLevel(nodeId, nodes, startNode).level === 0;
+            
+            return (
+                <div className="map-overlay">
+                    <div className="map-overlay-header">
+                        <h2>Scenario Map</h2>
+                        <div className="map-legend">
+                            <span><span className="legend-dot legend-start"></span> Start</span>
+                            <span><span className="legend-dot legend-terminal"></span> Terminal</span>
+                            <span><span className="legend-dot legend-selected"></span> Selected</span>
+                            <span><span className="legend-dot legend-orphan"></span> Orphan</span>
+                        </div>
+                        <button className="btn btn-close" onClick={onClose}>X</button>
+                    </div>
+                    <div className="map-overlay-content">
+                        <svg width={Math.max(maxWidth + padding * 2, 400)} height={Math.max((maxLevel + 1) * levelHeight + padding, 300)} style={{ display: 'block', margin: 'auto' }}>
+                            {connections.map((conn, i) => <line key={i} x1={conn.from.x} y1={conn.from.y + nodeHeight/2} x2={conn.to.x} y2={conn.to.y - nodeHeight/2} stroke="#4b5563" strokeWidth={2} />)}
+                            {Object.entries(positions).map(([nodeId, pos]) => {
+                                const isSelected = nodeId === selectedNode, isStart = nodeId === startNode, isEnd = isTerminal(nodeId), orphan = isOrphan(nodeId);
+                                let fill = '#1a1a2e', stroke = '#4b5563', sw = 2;
+                                if (isSelected) { fill = '#3730a3'; stroke = '#818cf8'; sw = 3; }
+                                if (isStart) stroke = '#10b981'; else if (orphan) stroke = '#ef4444'; else if (isEnd) stroke = '#f59e0b';
+                                const content = nodes[nodeId]?.content || '';
+                                const title = content.match(/^#\s+(.+)$/m)?.[1]?.slice(0, 15) || nodeId;
+                                return (
+                                    <g key={nodeId} style={{ cursor: 'pointer' }} onClick={() => { onSelectNode(nodeId); onClose(); }}>
+                                        <rect x={pos.x - nodeWidth/2 + 10} y={pos.y - nodeHeight/2} width={nodeWidth - 20} height={nodeHeight} rx={8} fill={fill} stroke={stroke} strokeWidth={sw} />
+                                        <text x={pos.x} y={pos.y - 6} textAnchor="middle" dominantBaseline="middle" fill="#fff" fontSize="11" fontWeight="500">{title.length > 15 ? title.slice(0, 12) + '...' : title}</text>
+                                        <text x={pos.x} y={pos.y + 10} textAnchor="middle" dominantBaseline="middle" fill="#9ca3af" fontSize="9" fontFamily="monospace">{nodeId.length > 14 ? nodeId.slice(0, 12) + '..' : nodeId}</text>
+                                    </g>
+                                );
+                            })}
+                        </svg>
+                    </div>
+                </div>
+            );
+        };
+        
+        // ============================================================
+        // SCENARIO FACTORY
+        // ============================================================
+        const createEmptyScenario = () => {
+            return {
+                meta: { title: 'New Scenario', description: '', author: '' },
+                translations: { ...defaultTranslations },
+                startNode: 'start',
+                nodes: { start: { content: '# Welcome\n\nEdit this content.', choices: [], resources: [] } }
+            };
+        };
+        
+        // ============================================================
+        // NODE LIST COMPONENT
+        // ============================================================
+        const NodeList = ({ scenario, selectedNode, onSelectNode, startNode, showMap, onToggleMap }) => {
+            const nodeIds = Object.keys(scenario.nodes);
+            const getNodeTitle = (nodeId) => { const c = scenario.nodes[nodeId]?.content || ''; const m = c.match(/^#\s+(.+)$/m); return m ? m[1].replace(/\*\*/g, '').slice(0, 30) : 'Untitled'; };
+            const isTerminal = (nodeId) => (scenario.nodes[nodeId]?.choices || []).length === 0;
+            const getNodeLevelInfo = (nodeId) => { const info = getNodeLevel(nodeId, scenario.nodes, startNode); return info.level === 0 ? 'orphan' : `L${info.level}-P${info.position}`; };
+            return (
+                <>
+                    <div style={{ padding: '0.5rem', borderBottom: '1px solid #2a2a4a', display: 'flex', gap: '0.5rem' }}>
+                        <button className={`btn ${!showMap ? 'btn-primary' : 'btn-secondary'}`} onClick={() => onToggleMap(false)} style={{ flex: 1, fontSize: '0.75rem' }}>List</button>
+                        <button className={`btn ${showMap ? 'btn-primary' : 'btn-secondary'}`} onClick={() => onToggleMap(true)} style={{ flex: 1, fontSize: '0.75rem' }}>Map</button>
+                    </div>
+                    {showMap ? <TreeMapOverlay nodes={scenario.nodes} startNode={startNode} selectedNode={selectedNode} onSelectNode={onSelectNode} onClose={() => onToggleMap(false)} /> : (
+                        <div className="node-list">
+                            {nodeIds.map(nodeId => (
+                                <div key={nodeId} className={`node-item ${selectedNode === nodeId ? 'selected' : ''} ${nodeId === startNode ? 'start-node' : ''} ${isTerminal(nodeId) ? 'terminal' : ''}`} onClick={() => onSelectNode(nodeId)}>
+                                    <div className="node-title">{getNodeTitle(nodeId)}</div>
+                                    <div className="node-id-small">{nodeId}</div>
+                                    <div className="node-badges">
+                                        <span className="badge">{getNodeLevelInfo(nodeId)}</span>
+                                        {nodeId === startNode && <span className="badge badge-start">START</span>}
+                                        {isTerminal(nodeId) && <span className="badge badge-terminal">END</span>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            );
+        };
+        
+        // ============================================================
+        // CREATE NODE POPUP COMPONENT
+        // ============================================================
+        const CreateNodePopup = ({ parentNodeId, existingNodeIds, onCreateNode, onCreated, onClose }) => {
+            const suggestId = () => { let base = `${parentNodeId}_child`, c = 1, id = base; while (existingNodeIds.includes(id)) { id = `${base}_${c}`; c++; } return id; };
+            const [nodeId, setNodeId] = useState(suggestId());
+            const [content, setContent] = useState('# New Node\n\nEdit this content.');
+            const [error, setError] = useState('');
+            const handleCreate = () => {
+                const cleanId = nodeId.trim().replace(/[^a-zA-Z0-9_]/g, '_');
+                if (!cleanId) { setError('Node ID required'); return; }
+                if (existingNodeIds.includes(cleanId)) { setError('ID already exists'); return; }
+                onCreateNode(cleanId, { content, choices: [], resources: [] });
+                onCreated(cleanId);
+            };
+            return (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header"><h3>Create New Node</h3><button className="btn btn-close" onClick={onClose} style={{ padding: '0.25rem 0.5rem' }}>✕</button></div>
+                        <div className="form-group">
+                            <label className="form-label">Node ID</label>
+                            <input type="text" className="form-input" value={nodeId} onChange={(e) => { setNodeId(e.target.value); setError(''); }} />
+                            {error && <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.25rem' }}>{error}</div>}
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Node content</label>
+                            <textarea className="form-input" rows={4} value={content} onChange={(e) => setContent(e.target.value)} />
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                            <button className="btn btn-success" onClick={handleCreate}>Create</button>
+                            <button className="btn btn-danger" onClick={onClose}>CANCEL</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // ============================================================
+        // CHOICE EDITOR COMPONENT
+        // ============================================================
+        const ChoiceEditor = ({ choice, index, nodeIds, parentNodeId, onChange, onRemove, onCreateNode }) => {
+            const [showCreate, setShowCreate] = useState(false);
+            const [showError, setShowError] = useState(false);
+            const handleTarget = (e) => {
+                if (e.target.value === '__CREATE__') {
+                    if (!choice.text || !choice.text.trim()) {
+                        setShowError(true);
+                        return;
+                    }
+                    setShowCreate(true);
+                } else {
+                    onChange({ ...choice, next: e.target.value });
+                }
+            };
+            const handleNodeCreated = (newNodeId) => {
+                onChange({ ...choice, next: newNodeId });
+                setShowCreate(false);
+            };
+            const handleTextChange = (e) => {
+                onChange({ ...choice, text: e.target.value });
+                if (e.target.value.trim()) setShowError(false);
+            };
+            return (
+                <div className="choice-item">
+                    <div className="choice-header">
+                        <span className="choice-number">Choice {index + 1}</span>
+                        <button className="btn btn-danger" onClick={onRemove} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>REMOVE</button>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Button Text {showError && <span style={{ color: '#ef4444', fontSize: '0.75rem' }}>(required before creating node)</span>}</label>
+                        <input type="text" className="form-input" value={choice.text || ''} onChange={handleTextChange} style={showError ? { borderColor: '#ef4444' } : {}} placeholder="Enter button text first" />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Target Node</label>
+                        <select className="form-select" value={choice.next || ''} onChange={handleTarget}>
+                            <option value="">-- Select --</option>
+                            <option value="__CREATE__" style={{ fontWeight: 'bold', color: '#10b981' }}>+ Create new node...</option>
+                            {nodeIds.map(id => <option key={id} value={id}>{id}</option>)}
+                        </select>
+                    </div>
+                    {showCreate && <CreateNodePopup parentNodeId={parentNodeId} existingNodeIds={nodeIds} onCreateNode={onCreateNode} onCreated={handleNodeCreated} onClose={() => setShowCreate(false)} />}
+                </div>
+            );
+        };
+        
+        // ============================================================
+        // RESOURCE EDITOR COMPONENT
+        // ============================================================
+        const ResourceEditor = ({ resource, index, onChange, onRemove }) => {
+            return (
+                <div className="resource-item">
+                    <div className="resource-header">
+                        <span className="choice-number">Resource {index + 1}</span>
+                        <button className="btn btn-danger" onClick={onRemove} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>Remove</button>
+                    </div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label className="form-label">Type</label>
+                            <select className="form-select" value={resource.type || 'link'} onChange={(e) => onChange({ ...resource, type: e.target.value })}>
+                                <option value="link">Link</option>
+                                <option value="download">Download</option>
+                                <option value="video">Video</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">URL</label>
+                            <input type="text" className="form-input" value={resource.url || ''} onChange={(e) => onChange({ ...resource, url: e.target.value })} />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Label</label>
+                        <input type="text" className="form-input" value={resource.label || ''} onChange={(e) => onChange({ ...resource, label: e.target.value })} />
+                    </div>
+                </div>
+            );
+        };
+        
+        // ============================================================
+        // NODE EDITOR COMPONENT
+        // ============================================================
+        const NodeEditor = ({ nodeId, node, nodeIds, startNode, onUpdateNode, onDeleteNode, onSetStartNode, onRenameNode, onCreateNode }) => {
+            const [newNodeId, setNewNodeId] = useState(nodeId);
+            const [showRename, setShowRename] = useState(false);
+
+            useEffect(() => { setNewNodeId(nodeId); setShowRename(false); }, [nodeId]);
+
+            const handleRename = () => { if (newNodeId && newNodeId !== nodeId && !nodeIds.includes(newNodeId)) { onRenameNode(nodeId, newNodeId); setShowRename(false); } };
+            const updateContent = (value) => onUpdateNode(nodeId, { ...node, content: value });
+            const updateChoice = (i, c) => { const nc = [...(node.choices || [])]; nc[i] = c; onUpdateNode(nodeId, { ...node, choices: nc }); };
+            const addChoice = () => onUpdateNode(nodeId, { ...node, choices: [...(node.choices || []), { text: '', next: '' }] });
+            const removeChoice = (i) => onUpdateNode(nodeId, { ...node, choices: (node.choices || []).filter((_, idx) => idx !== i) });
+            const updateResource = (i, r) => { const nr = [...(node.resources || [])]; nr[i] = r; onUpdateNode(nodeId, { ...node, resources: nr }); };
+            const addResource = () => onUpdateNode(nodeId, { ...node, resources: [...(node.resources || []), { type: 'link', label: '', url: '' }] });
+            const removeResource = (i) => onUpdateNode(nodeId, { ...node, resources: (node.resources || []).filter((_, idx) => idx !== i) });
+
+            return (
+                <div className="editor-content">
+                    <div className="form-section">
+                        <h3>Node: {nodeId} {nodeId === startNode && <span className="badge badge-start" style={{ marginLeft: '0.5rem' }}>START</span>}</h3>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            {!showRename ? <button className="btn btn-secondary" onClick={() => setShowRename(true)}>Rename</button> : (
+                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                    <input type="text" className="form-input" style={{ width: '150px' }} value={newNodeId} onChange={(e) => setNewNodeId(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))} />
+                                    <button className="btn btn-primary" onClick={handleRename}>OK</button>
+                                    <button className="btn btn-danger" onClick={() => { setShowRename(false); setNewNodeId(nodeId); }}>Cancel</button>
+                                </div>
+                            )}
+                            {nodeId !== startNode && <button className="btn btn-success" onClick={() => onSetStartNode(nodeId)}>Set as Start</button>}
+                            {nodeId !== startNode && <button className="btn btn-danger" onClick={() => onDeleteNode(nodeId)}>Delete</button>}
+                        </div>
+                    </div>
+
+                    <div className="form-section">
+                        <h3>📝 Content</h3>
+                        <div className="form-group">
+                            <label className="form-label">Content - Markdown</label>
+                            <textarea className="form-input form-textarea" value={node.content || ''} onChange={(e) => updateContent(e.target.value)} placeholder="# Title&#10;&#10;Content..." />
+                        </div>
+                    </div>
+
+                    <div className="form-section">
+                        <h3>🔀 Choices ({(node.choices || []).length})</h3>
+                        {(node.choices || []).map((choice, i) => <ChoiceEditor key={i} choice={choice} index={i} nodeIds={nodeIds} parentNodeId={nodeId} onChange={(c) => updateChoice(i, c)} onRemove={() => removeChoice(i)} onCreateNode={onCreateNode} />)}
+                        <button className="btn btn-success" onClick={addChoice}>+ Add Choice</button>
+                        {(node.choices || []).length === 0 && <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.5rem', textAlign: 'center' }}>No choices = terminal node</p>}
+                    </div>
+
+                    <div className="form-section">
+                        <h3>📎 Resources ({(node.resources || []).length})</h3>
+                        {(node.resources || []).map((r, i) => <ResourceEditor key={i} resource={r} index={i} onChange={(res) => updateResource(i, res)} onRemove={() => removeResource(i)} />)}
+                        <button className="btn btn-success" onClick={addResource}>+ Add Resource</button>
+                    </div>
+                </div>
+            );
+        };
+        
+        // ============================================================
+        // META EDITOR COMPONENT
+        // ============================================================
+        const MetaEditor = ({ meta, translations, onUpdate, onClose }) => {
+            const [localMeta, setLocalMeta] = useState(meta);
+            const [localTrans, setLocalTrans] = useState(translations);
+            const handleSave = () => { onUpdate(localMeta, localTrans); onClose(); };
+            return (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{ maxWidth: '650px' }}>
+                        <div className="modal-header"><h2>Scenario Settings</h2><button className="btn btn-close" onClick={onClose}>✕</button></div>
+                        <div className="form-group">
+                            <label className="form-label">Title</label>
+                            <input type="text" className="form-input" value={localMeta.title || ''} onChange={(e) => setLocalMeta({ ...localMeta, title: e.target.value })} />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Description</label>
+                            <textarea className="form-input" rows={2} value={localMeta.description || ''} onChange={(e) => setLocalMeta({ ...localMeta, description: e.target.value })} />
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Author</label>
+                            <input type="text" className="form-input" value={localMeta.author || ''} onChange={(e) => setLocalMeta({ ...localMeta, author: e.target.value })} />
+                        </div>
+                        <hr style={{ borderColor: '#374151', margin: '1rem 0' }} />
+                        <h4 style={{ color: '#fff', marginBottom: '0.75rem' }}>UI Labels</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                            {Object.keys(defaultTranslations).map(key => (
+                                <div key={key} className="form-group" style={{ marginBottom: '0.5rem' }}>
+                                    <label className="form-label" style={{ fontSize: '0.7rem' }}>{key}</label>
+                                    <input type="text" className="form-input" style={{ padding: '0.4rem', fontSize: '0.8rem' }} value={localTrans?.[key] || ''} onChange={(e) => setLocalTrans({ ...localTrans, [key]: e.target.value })} />
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                            <button className="btn btn-primary" onClick={handleSave}>Save</button>
+                            <button className="btn btn-danger" onClick={onClose}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        // ============================================================
+        // WELCOME SCREEN COMPONENT
+        // ============================================================
+        const WelcomeScreen = ({ onNew, onOpen }) => (
+            <div className="welcome-screen">
+                <h2>Scenario Editor</h2>
+                <p>Create branching narrative scenarios for training, education, or interactive storytelling.</p>
+                <div className="welcome-actions">
+                    <button className="btn btn-success" onClick={onNew}>+ New Scenario</button>
+                    <button className="btn btn-primary" onClick={onOpen}>📂 Open File</button>
+                </div>
+            </div>
+        );
+        
+        // ============================================================
+        // MAIN SCENARIO EDITOR COMPONENT
+        // ============================================================
+        const ScenarioEditor = () => {
+            const [scenario, setScenario] = useState(null);
+            const [selectedNode, setSelectedNode] = useState(null);
+            const [hasChanges, setHasChanges] = useState(false);
+            const [showMetaEditor, setShowMetaEditor] = useState(false);
+            const [showMap, setShowMap] = useState(false);
+            const [fileName, setFileName] = useState(null);
+            const fileInputRef = useRef(null);
+            
+            const nodeIds = scenario ? Object.keys(scenario.nodes) : [];
+            
+            const handleLoad = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setFileName(file.name);
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        try {
+                            const data = JSON.parse(ev.target.result);
+                            setScenario(data);
+                            setSelectedNode(data.startNode || Object.keys(data.nodes)[0]);
+                            setHasChanges(false);
+                        } catch (err) { alert('Error: ' + err.message); }
+                    };
+                    reader.readAsText(file, 'UTF-8');
+                }
+                e.target.value = '';
+            };
+            
+            const handleSave = () => {
+                if (!scenario) return;
+                const saveName = fileName || 'scenario.json';
+                const json = JSON.stringify(scenario, null, 4);
+                const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = saveName; a.click();
+                URL.revokeObjectURL(url);
+                setHasChanges(false);
+            };
+            
+            const handleNew = () => {
+                if (hasChanges && !confirm('Unsaved changes will be lost. Continue?')) return;
+                setScenario(createEmptyScenario());
+                setSelectedNode('start');
+                setFileName(null);
+                setHasChanges(false);
+            };
+            
+            const handleUpdateNode = (nodeId, node) => { setScenario(prev => ({ ...prev, nodes: { ...prev.nodes, [nodeId]: node } })); setHasChanges(true); };
+            const handleCreateNode = (newId, newNode) => { setScenario(prev => ({ ...prev, nodes: { ...prev.nodes, [newId]: newNode } })); setHasChanges(true); };
+            const handleDeleteNode = (nodeId) => {
+                if (!confirm(`Delete "${nodeId}"?`)) return;
+                const newNodes = { ...scenario.nodes }; delete newNodes[nodeId];
+                Object.keys(newNodes).forEach(id => { if (newNodes[id].choices) newNodes[id].choices = newNodes[id].choices.filter(c => c.next !== nodeId); });
+                setScenario(prev => ({ ...prev, nodes: newNodes }));
+                setSelectedNode(Object.keys(newNodes)[0] || null);
+                setHasChanges(true);
+            };
+            const handleSetStartNode = (nodeId) => { setScenario(prev => ({ ...prev, startNode: nodeId })); setHasChanges(true); };
+            const handleRenameNode = (oldId, newId) => {
+                const newNodes = {};
+                Object.keys(scenario.nodes).forEach(id => {
+                    const key = id === oldId ? newId : id;
+                    newNodes[key] = { ...scenario.nodes[id] };
+                    if (newNodes[key].choices) newNodes[key].choices = newNodes[key].choices.map(c => c.next === oldId ? { ...c, next: newId } : c);
+                });
+                setScenario(prev => ({ ...prev, startNode: prev.startNode === oldId ? newId : prev.startNode, nodes: newNodes }));
+                setSelectedNode(newId);
+                setHasChanges(true);
+            };
+            const handleUpdateMeta = (meta, trans) => { setScenario(prev => ({ ...prev, meta, translations: trans })); setHasChanges(true); };
+            
+            const triggerFileOpen = () => fileInputRef.current?.click();
+            
+            // Welcome screen when no scenario loaded
+            if (!scenario) {
+                return (
+                    <div className="editor-container">
+                        <input ref={fileInputRef} type="file" accept=".json" className="hidden-input" onChange={handleLoad} />
+                        <div className="main-editor">
+                            <WelcomeScreen onNew={handleNew} onOpen={triggerFileOpen} />
+                        </div>
+                        <div className="credits">
+                            Created by <a href="https://ai-know.pro" target="_blank" rel="noopener noreferrer">Paolo Dalprato</a>
+                        </div>
+                    </div>
+                );
+            }
+            
+            return (
+                <div className="editor-container">
+                    <div className="sidebar">
+                        <div className="sidebar-header">
+                            <h1>Scenario Editor</h1>
+                            <div className="sidebar-actions">
+                                <button className="btn btn-secondary" onClick={handleNew}>New</button>
+                                <button className="btn btn-secondary" onClick={triggerFileOpen}>Open</button>
+                                <button className="btn btn-primary" onClick={handleSave}>Save</button>
+                            </div>
+                            <input ref={fileInputRef} type="file" accept=".json" className="hidden-input" onChange={handleLoad} />
+                        </div>
+                        <NodeList scenario={scenario} selectedNode={selectedNode} onSelectNode={setSelectedNode} startNode={scenario.startNode} showMap={showMap} onToggleMap={setShowMap} />
+                    </div>
+                    
+                    <div className="main-editor">
+                        <div className="editor-header">
+                            <div>
+                                <strong>{fileName || 'New scenario'}</strong>
+                                {hasChanges && <span style={{ color: '#f59e0b', marginLeft: '0.5rem' }}>●</span>}
+                                <span style={{ marginLeft: '1rem', color: '#6b7280' }}>{nodeIds.length} nodes</span>
+                            </div>
+                            <button className="btn btn-secondary" onClick={() => setShowMetaEditor(true)}>⚙️ Settings</button>
+                        </div>
+                        
+                        {selectedNode && scenario.nodes[selectedNode] ? (
+                            <NodeEditor nodeId={selectedNode} node={scenario.nodes[selectedNode]} nodeIds={nodeIds} startNode={scenario.startNode} onUpdateNode={handleUpdateNode} onDeleteNode={handleDeleteNode} onSetStartNode={handleSetStartNode} onRenameNode={handleRenameNode} onCreateNode={handleCreateNode} />
+                        ) : (
+                            <div className="empty-state"><h2>No node selected</h2><p>Select a node from the sidebar.</p></div>
+                        )}
+                        
+                        <div className="status-bar">
+                            <span className={hasChanges ? 'status-unsaved' : 'status-saved'}>{hasChanges ? '● Unsaved' : '✓ Saved'}</span>
+                            <span>Start: {scenario.startNode}</span>
+                        </div>
+                    </div>
+                    
+                    {showMetaEditor && <MetaEditor meta={scenario.meta} translations={scenario.translations || {}} onUpdate={handleUpdateMeta} onClose={() => setShowMetaEditor(false)} />}
+
+                    <div className="credits">
+                        Created by <a href="https://ai-know.pro" target="_blank" rel="noopener noreferrer">Paolo Dalprato</a>
+                    </div>
+                </div>
+            );
+        };
+        
+        ReactDOM.createRoot(document.getElementById('root')).render(<ScenarioEditor />);
+    </script>
+</body>
+</html>

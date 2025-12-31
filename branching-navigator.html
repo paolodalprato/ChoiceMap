@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branching Navigator - Interactive Decision Tree</title>
+    <meta name="description" content="Interactive branching narrative framework for educational and training scenarios">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .slide-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .slide-content h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .slide-content h2 {
+            color: #e0e0e0;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        
+        .slide-content p {
+            color: #b0b0b0;
+            font-size: 1.125rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        
+        .slide-content ul {
+            color: #b0b0b0;
+            font-size: 1.125rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        
+        .slide-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .slide-content blockquote {
+            border-left: 4px solid #6366f1;
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            color: #d0d0d0;
+            font-style: italic;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .slide-content strong {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .slide-content em {
+            color: #c0c0c0;
+        }
+        
+        .choices-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-start;
+        }
+        
+        .choice-button {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            min-width: 180px;
+            text-align: center;
+        }
+        
+        .choice-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+        
+        .choice-button.visited {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .choice-button.visited::after {
+            content: ' ✓';
+        }
+        
+        .choice-button.explored {
+            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+            border: 2px solid #6366f1;
+            box-shadow: 0 4px 15px rgba(75, 85, 99, 0.3);
+        }
+        
+        .progress-indicator {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+            z-index: 100;
+        }
+        
+        .map-button {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid #6366f1;
+            color: #a5b4fc;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 100;
+        }
+        
+        .map-button:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+        
+        .restart-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+            margin-top: 1rem;
+        }
+        
+        .restart-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+        
+        .terminal-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            z-index: 50;
+        }
+        
+        .back-button:hover {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: #6366f1;
+        }
+        
+        .back-button svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .resources-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .resources-title {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .resource-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #a5b4fc;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 6px;
+            margin-right: 0.75rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .resource-link:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+        
+        .map-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+        
+        .map-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+        
+        .map-header h2 {
+            color: white;
+            font-size: 1.5rem;
+            margin: 0;
+            text-align: center;
+        }
+        
+        .close-button {
+            position: absolute;
+            right: 1rem;
+            background: #ef4444;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .close-button:hover {
+            background: #dc2626;
+        }
+        
+        .map-content {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .map-content svg {
+            display: block;
+            margin: auto;
+        }
+        
+        .tree-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tree-node:hover {
+            filter: brightness(1.2);
+        }
+        
+        .tree-node.visited {
+            cursor: pointer;
+        }
+        
+        .tree-node.not-visited {
+            opacity: 0.4;
+            cursor: default;
+        }
+        
+        .tree-node.current {
+            filter: brightness(1.1);
+        }
+        
+        .credits {
+            position: fixed;
+            bottom: 0.5rem;
+            left: 0.5rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.65rem;
+            z-index: 10;
+        }
+
+        .credits a {
+            color: rgba(255, 255, 255, 0.4);
+            text-decoration: none;
+        }
+
+        .credits a:hover {
+            color: #6366f1;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .error {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #ef4444;
+            font-size: 1.25rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // ============================================================
+        // Helper: Get text value (supports legacy language objects)
+        // ============================================================
+        const getText = (value) => {
+            if (typeof value === 'string') return value;
+            if (value && typeof value === 'object') {
+                return value[Object.keys(value)[0]] || '';
+            }
+            return '';
+        };
+
+        // ============================================================
+        // Markdown Parser Component
+        // ============================================================
+        const MarkdownContent = ({ content }) => {
+            const parseMarkdown = (text) => {
+                if (!text) return [];
+                
+                const lines = text.split('\n');
+                const elements = [];
+                let currentList = [];
+                let inList = false;
+                
+                const processInlineMarkdown = (line) => {
+                    line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                    line = line.replace(/\*(.+?)\*/g, '<em>$1</em>');
+                    return line;
+                };
+                
+                const flushList = () => {
+                    if (currentList.length > 0) {
+                        elements.push(
+                            <ul key={`list-${elements.length}`}>
+                                {currentList.map((item, i) => (
+                                    <li key={i} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(item) }} />
+                                ))}
+                            </ul>
+                        );
+                        currentList = [];
+                    }
+                    inList = false;
+                };
+                
+                lines.forEach((line, index) => {
+                    if (line.startsWith('# ')) {
+                        flushList();
+                        elements.push(
+                            <h1 key={index} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(line.slice(2)) }} />
+                        );
+                    } else if (line.startsWith('## ')) {
+                        flushList();
+                        elements.push(
+                            <h2 key={index} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(line.slice(3)) }} />
+                        );
+                    } else if (line.startsWith('> ')) {
+                        flushList();
+                        elements.push(
+                            <blockquote key={index} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(line.slice(2)) }} />
+                        );
+                    } else if (line.startsWith('- ')) {
+                        inList = true;
+                        currentList.push(line.slice(2));
+                    } else if (line.trim()) {
+                        flushList();
+                        elements.push(
+                            <p key={index} dangerouslySetInnerHTML={{ __html: processInlineMarkdown(line) }} />
+                        );
+                    } else if (inList) {
+                        flushList();
+                    }
+                });
+                
+                flushList();
+                return elements;
+            };
+            
+            return <>{parseMarkdown(content)}</>;
+        };
+        
+        // ============================================================
+        // Tree Map Component
+        // ============================================================
+        const TreeMap = ({ scenarioData, nodes, visitedNodes, currentNode, onNodeClick }) => {
+            const buildTreeLayout = () => {
+                const nodePositions = {};
+                const nodesByLevel = {};
+                
+                const queue = [{ id: scenarioData.startNode, level: 0 }];
+                const visited = new Set();
+                
+                while (queue.length > 0) {
+                    const { id, level } = queue.shift();
+                    if (visited.has(id)) continue;
+                    visited.add(id);
+                    
+                    if (!nodesByLevel[level]) nodesByLevel[level] = [];
+                    nodesByLevel[level].push(id);
+                    
+                    const node = nodes[id];
+                    if (node && node.choices) {
+                        node.choices.forEach(choice => {
+                            if (!visited.has(choice.next)) {
+                                queue.push({ id: choice.next, level: level + 1 });
+                            }
+                        });
+                    }
+                }
+                
+                // Tree layout constants (px)
+                const levelHeight = 120;  // Vertical spacing between levels
+                const nodeWidth = 140;    // Horizontal spacing between nodes
+                const padding = 60;       // SVG padding
+                
+                let maxWidth = 0;
+                Object.keys(nodesByLevel).forEach(level => {
+                    const nodesInLevel = nodesByLevel[level];
+                    const totalWidth = nodesInLevel.length * nodeWidth;
+                    maxWidth = Math.max(maxWidth, totalWidth);
+                });
+                
+                Object.keys(nodesByLevel).forEach(level => {
+                    const nodesInLevel = nodesByLevel[level];
+                    const totalWidth = nodesInLevel.length * nodeWidth;
+                    const startX = (maxWidth - totalWidth) / 2 + nodeWidth / 2;
+                    
+                    nodesInLevel.forEach((nodeId, index) => {
+                        nodePositions[nodeId] = {
+                            x: startX + index * nodeWidth + padding,
+                            y: parseInt(level) * levelHeight + padding
+                        };
+                    });
+                });
+                
+                const totalLevels = Object.keys(nodesByLevel).length;
+                
+                return {
+                    positions: nodePositions,
+                    width: maxWidth + padding * 2,
+                    height: totalLevels * levelHeight + padding
+                };
+            };
+            
+            const { positions, width, height } = buildTreeLayout();
+            
+            const connections = [];
+            Object.keys(nodes).forEach(nodeId => {
+                const node = nodes[nodeId];
+                if (node.choices && positions[nodeId]) {
+                    node.choices.forEach(choice => {
+                        if (positions[choice.next]) {
+                            connections.push({
+                                from: positions[nodeId],
+                                to: positions[choice.next],
+                                visited: visitedNodes.has(nodeId) && visitedNodes.has(choice.next)
+                            });
+                        }
+                    });
+                }
+            });
+            
+            const getNodeLabel = (nodeId) => {
+                const node = nodes[nodeId];
+                if (!node) return nodeId;
+                
+                const content = getText(node.content);
+                const match = content.match(/^#\s+(.+)$/m);
+                if (match) {
+                    const title = match[1].replace(/\*\*/g, '');
+                    return title.length > 15 ? title.slice(0, 12) + '...' : title;
+                }
+                return nodeId;
+            };
+            
+            return (
+                <svg 
+                    width={Math.max(width, 400)} 
+                    height={Math.max(height, 300)}
+                    style={{ display: 'block' }}
+                >
+                    {connections.map((conn, index) => (
+                        <line
+                            key={`conn-${index}`}
+                            x1={conn.from.x}
+                            y1={conn.from.y + 20}
+                            x2={conn.to.x}
+                            y2={conn.to.y - 20}
+                            stroke={conn.visited ? '#6366f1' : '#444'}
+                            strokeWidth={conn.visited ? 3 : 2}
+                            strokeDasharray={conn.visited ? 'none' : '5,5'}
+                        />
+                    ))}
+                    
+                    {Object.keys(positions).map(nodeId => {
+                        const pos = positions[nodeId];
+                        const isVisited = visitedNodes.has(nodeId);
+                        const isCurrent = nodeId === currentNode;
+                        
+                        return (
+                            <g
+                                key={nodeId}
+                                className={`tree-node ${isVisited ? 'visited' : 'not-visited'} ${isCurrent ? 'current' : ''}`}
+                                onClick={() => isVisited && onNodeClick(nodeId)}
+                                transform={`translate(${pos.x}, ${pos.y})`}
+                            >
+                                <rect
+                                    x={-50}
+                                    y={-20}
+                                    width={100}
+                                    height={40}
+                                    rx={8}
+                                    fill={isCurrent ? '#6366f1' : isVisited ? '#3730a3' : '#333'}
+                                    stroke={isCurrent ? '#a5b4fc' : isVisited ? '#6366f1' : '#555'}
+                                    strokeWidth={2}
+                                />
+                                <text
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                    fill={isVisited ? '#fff' : '#888'}
+                                    fontSize="12"
+                                    fontWeight={isCurrent ? 'bold' : 'normal'}
+                                >
+                                    {getNodeLabel(nodeId)}
+                                </text>
+                            </g>
+                        );
+                    })}
+                </svg>
+            );
+        };
+        
+        // ============================================================
+        // Main Branching Navigator Component
+        // ============================================================
+        const BranchingNavigator = () => {
+            const [config, setConfig] = useState(null);
+            const [scenarioData, setScenarioData] = useState(null);
+            const [currentNode, setCurrentNode] = useState(null);
+            const [visitedNodes, setVisitedNodes] = useState(new Set());
+            const [choicesMade, setChoicesMade] = useState(new Map());
+            const [path, setPath] = useState([]);
+            const [showMap, setShowMap] = useState(false);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [translations, setTranslations] = useState({});
+            const [scenarioFileName, setScenarioFileName] = useState('');
+            
+            // Load config, then scenario
+            useEffect(() => {
+                fetch('config.json')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to load config.json');
+                        return response.json();
+                    })
+                    .then(configData => {
+                        setConfig(configData);
+                        setScenarioFileName(configData.scenario);
+
+                        return fetch(configData.scenario);
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to load scenario');
+                        return response.json();
+                    })
+                    .then(data => {
+                        setScenarioData(data);
+                        setCurrentNode(data.startNode);
+                        setVisitedNodes(new Set([data.startNode]));
+                        setPath([data.startNode]);
+                        
+                        // Load translations from scenario
+                        if (data.translations) {
+                            setTranslations(data.translations);
+                        }
+                        
+                        setLoading(false);
+                    })
+                    .catch(err => {
+                        setError(err.message);
+                        setLoading(false);
+                    });
+            }, []);
+            
+            const t = translations || {};
+            
+            const handleChoice = (nextNode) => {
+                setChoicesMade(prev => {
+                    const newMap = new Map(prev);
+                    newMap.set(currentNode, nextNode);
+                    return newMap;
+                });
+                
+                setVisitedNodes(prev => new Set([...prev, nextNode]));
+                setPath(prev => [...prev, nextNode]);
+                setCurrentNode(nextNode);
+            };
+            
+            const handleNodeClick = (nodeId) => {
+                if (visitedNodes.has(nodeId)) {
+                    const pathIndex = path.indexOf(nodeId);
+                    if (pathIndex !== -1) {
+                        setPath(path.slice(0, pathIndex + 1));
+                    }
+                    setCurrentNode(nodeId);
+                    setShowMap(false);
+                }
+            };
+            
+            const handleRestart = () => {
+                setCurrentNode(scenarioData.startNode);
+                setVisitedNodes(new Set([scenarioData.startNode]));
+                setChoicesMade(new Map());
+                setPath([scenarioData.startNode]);
+            };
+            
+            const handleGoBack = () => {
+                if (path.length > 1) {
+                    const newPath = path.slice(0, -1);
+                    setPath(newPath);
+                    setCurrentNode(newPath[newPath.length - 1]);
+                }
+            };
+            
+            const getPreviousChoice = () => {
+                return choicesMade.get(currentNode);
+            };
+            
+            const canGoBack = path.length > 1;
+            const showCredits = config?.showCredits !== false;
+            
+            if (loading) {
+                return <div className="loading">Loading...</div>;
+            }
+
+            if (error) {
+                return (
+                    <div className="error">
+                        <div>Error: {error}</div>
+                        <div style={{ fontSize: '0.875rem', color: '#888' }}>
+                            Make sure config.json and scenario file are in the same folder.
+                        </div>
+                    </div>
+                );
+            }
+            
+            const node = scenarioData.nodes[currentNode];
+            if (!node) return <div className="error">Node not found: {currentNode}</div>;
+            
+            const content = getText(node.content);
+            const choices = node.choices || [];
+            const resources = node.resources || [];
+            const isTerminal = choices.length === 0;
+            const previousChoice = getPreviousChoice();
+            
+            const totalNodes = Object.keys(scenarioData.nodes).length;
+            const currentStep = path.length;
+            
+            return (
+                <>
+                    <div className="slide-container">
+                        {canGoBack && (
+                            <button className="back-button" onClick={handleGoBack}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="15 18 9 12 15 6" />
+                                </svg>
+                                {t.back}
+                            </button>
+                        )}
+                        
+                        <div className="progress-indicator">
+                            {t.step} {currentStep} / {totalNodes}
+                        </div>
+                        
+                        <div className="slide-content">
+                            {isTerminal && (
+                                <div className="terminal-badge">{t.endOfPath}</div>
+                            )}
+                            
+                            <MarkdownContent content={content} />
+                            
+                            {choices.length > 0 && (
+                                <div className="choices-container">
+                                    {choices.map((choice, index) => {
+                                        const choiceText = getText(choice.text);
+                                        const isThisChoiceMade = previousChoice === choice.next;
+                                        const isExplored = visitedNodes.has(choice.next) && !isThisChoiceMade;
+                                        
+                                        return (
+                                            <button
+                                                key={index}
+                                                className={`choice-button ${isThisChoiceMade ? 'visited' : ''} ${isExplored ? 'explored' : ''}`}
+                                                onClick={() => handleChoice(choice.next)}
+                                            >
+                                                {choiceText}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            
+                            {isTerminal && (
+                                <button className="restart-button" onClick={handleRestart}>
+                                    {t.restart}
+                                </button>
+                            )}
+                            
+                            {resources.length > 0 && (
+                                <div className="resources-section">
+                                    <div className="resources-title">{t.resources}</div>
+                                    {resources.map((resource, index) => {
+                                        const label = getText(resource.label);
+                                        const icon = resource.type === 'download' ? '📥' : 
+                                                     resource.type === 'video' ? '🎬' : '🔗';
+                                        
+                                        return (
+                                            <a
+                                                key={index}
+                                                href={resource.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="resource-link"
+                                                download={resource.type === 'download' ? true : undefined}
+                                            >
+                                                {icon} {label}
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        
+                        <button className="map-button" onClick={() => setShowMap(true)}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+                                <line x1="8" y1="2" x2="8" y2="18" />
+                                <line x1="16" y1="6" x2="16" y2="22" />
+                            </svg>
+                            {t.viewMap}
+                        </button>
+                    </div>
+                    
+                    {showMap && (
+                        <div className="map-overlay">
+                            <div className="map-header">
+                                <h2>{t.mapOf} {scenarioFileName}</h2>
+                                <button className="close-button" onClick={() => setShowMap(false)}>X</button>
+                            </div>
+                            <div className="map-content">
+                                <TreeMap
+                                    scenarioData={scenarioData}
+                                    nodes={scenarioData.nodes}
+                                    visitedNodes={visitedNodes}
+                                    currentNode={currentNode}
+                                    onNodeClick={handleNodeClick}
+                                />
+                            </div>
+                        </div>
+                    )}
+                    
+                    {showCredits && (
+                        <div className="credits">
+                            Created by <a href="https://ai-know.pro" target="_blank" rel="noopener noreferrer">Paolo Dalprato</a>
+                        </div>
+                    )}
+                </>
+            );
+        };
+        
+        ReactDOM.createRoot(document.getElementById('root')).render(<BranchingNavigator />);
+    </script>
+</body>
+</html>
