@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Editor - Branching Navigator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #ffffff; color: #1f2937; min-height: 100vh; }
+        .editor-container { display: flex; height: 100vh; }
+        .sidebar { width: 380px; background: #f9fafb; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+        .sidebar-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; background: #f9fafb; z-index: 10; }
+        .sidebar-header h1 { font-size: 1.25rem; margin: 0 0 0.5rem 0; color: #111827; }
+        .sidebar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .btn { padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn-primary { background: #6366f1; color: white; }
+        .btn-primary:hover { background: #5558e3; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background: #d1d5db; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; text-transform: uppercase; font-weight: 600; }
+        .btn-danger:hover { background: #dc2626; }
+        .sidebar-content { flex: 1; padding: 1rem; }
+        .section { background: #ffffff; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #e5e7eb; }
+        .section h3 { margin: 0 0 1rem 0; font-size: 0.9rem; color: #111827; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .form-group { margin-bottom: 0.75rem; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label { display: block; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.25rem; }
+        .form-input { width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #1f2937; font-size: 0.85rem; }
+        .form-input:focus { outline: none; border-color: #6366f1; }
+        .color-row { display: flex; align-items: center; gap: 0.5rem; }
+        .color-input { width: 40px; height: 32px; padding: 2px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer; }
+        .color-hex { flex: 1; }
+        .preview-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .preview-header { padding: 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .preview-header h2 { margin: 0; font-size: 1rem; color: #111827; }
+        .preview-content { flex: 1; overflow: auto; }
+        .preview-frame { width: 100%; height: 100%; border: none; }
+        .hidden-input { display: none; }
+        .status-bar { padding: 0.5rem 1rem; background: #f9fafb; border-top: 1px solid #e5e7eb; font-size: 0.75rem; color: #6b7280; display: flex; justify-content: space-between; }
+        .status-saved { color: #10b981; }
+        .status-unsaved { color: #f59e0b; }
+        .credits { position: fixed; bottom: 0.5rem; left: 0.5rem; color: #9ca3af; font-size: 0.65rem; z-index: 10; }
+        .credits a { color: #9ca3af; text-decoration: none; }
+        .credits a:hover { color: #6366f1; }
+        .logo-preview { max-width: 100%; max-height: 60px; margin-top: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; padding: 0.25rem; }
+        .color-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .position-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .form-select { width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #1f2937; font-size: 0.85rem; cursor: pointer; }
+        .form-select:focus { outline: none; border-color: #6366f1; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f3f4f6; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // ============================================================
+        // DEFAULTS: Loaded from defaults.json
+        // ============================================================
+        let fontOptions = {};
+        let defaultTheme = {};
+
+        // ============================================================
+        // COLOR INPUT COMPONENT
+        // ============================================================
+        const ColorInput = ({ label, value, onChange }) => {
+            return (
+                <div className="form-group">
+                    <label className="form-label">{label}</label>
+                    <div className="color-row">
+                        <input
+                            type="color"
+                            className="color-input"
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                        />
+                        <input
+                            type="text"
+                            className="form-input color-hex"
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            pattern="^#[0-9A-Fa-f]{6}$"
+                        />
+                    </div>
+                </div>
+            );
+        };
+
+        // ============================================================
+        // PREVIEW COMPONENT
+        // ============================================================
+        const Preview = ({ theme }) => {
+            const brandPos = theme.brand.position || { vertical: 'top', horizontal: 'right' };
+            const fontKey = theme.typography?.fontFamily || 'system';
+            const font = fontOptions[fontKey] || fontOptions['system'];
+            const googleFontLink = font.google
+                ? `<link href="https://fonts.googleapis.com/css2?family=${font.name.replace(/ /g, '+')}:wght@400;500;600;700&display=swap" rel="stylesheet">`
+                : '';
+
+            const previewStyles = `
+                body {
+                    background: ${theme.colors.background};
+                    color: ${theme.colors.text};
+                    font-family: ${font.family};
+                    padding: 2rem;
+                    padding-top: ${brandPos.vertical === 'top' && (theme.brand.name || theme.brand.logo) ? '4rem' : '2rem'};
+                    margin: 0;
+                    min-height: 100vh;
+                    position: relative;
+                }
+                h1 { color: ${theme.colors.text}; font-size: 1.75rem; margin-bottom: 1rem; }
+                p { color: ${theme.colors.textSecondary}; line-height: 1.6; margin-bottom: 1rem; }
+                .brand {
+                    position: fixed;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    padding: 0.5rem;
+                    ${brandPos.vertical === 'top' ? 'top: 0.5rem;' : 'bottom: 0.5rem;'}
+                    ${brandPos.horizontal === 'left' ? 'left: 1rem;' : brandPos.horizontal === 'center' ? 'left: 50%; transform: translateX(-50%);' : 'right: 1rem;'}
+                }
+                .brand img { height: 32px; }
+                .brand span { color: ${theme.colors.text}; font-weight: 500; }
+                .brand a { color: ${theme.colors.text}; text-decoration: none; }
+                .brand a:hover { color: ${theme.colors.accent}; }
+                .choices { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+                .btn { padding: 0.75rem 1.25rem; border-radius: 10px; border: none; cursor: pointer; font-size: 0.9rem; }
+                .btn-choice { background: ${theme.buttons.choiceBackground}; color: ${theme.buttons.choiceText}; }
+                .btn-visited { background: ${theme.buttons.visitedBackground}; color: ${theme.buttons.visitedText}; }
+                .btn-explored { background: ${theme.buttons.exploredBackground}; color: ${theme.buttons.exploredText}; border: 2px solid ${theme.colors.accent}; }
+                .btn-restart { background: ${theme.buttons.restartBackground}; color: ${theme.buttons.restartText}; margin-top: 1rem; }
+                .map-preview { background: ${theme.colors.background}; border: 1px solid ${theme.colors.border}; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem; }
+                .map-title { color: ${theme.colors.text}; font-size: 1rem; margin-bottom: 1rem; }
+                .nodes { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+                .node { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.8rem; text-align: center; min-width: 80px; }
+                .node-current { background: ${theme.map.nodeCurrent}; color: ${theme.map.nodeCurrentText}; }
+                .node-visited { background: ${theme.map.nodeVisited}; color: ${theme.map.nodeVisitedText}; }
+                .node-unvisited { background: ${theme.map.nodeUnvisited}; color: ${theme.map.nodeUnvisitedText}; border: 1px solid ${theme.map.nodeUnvisitedBorder}; }
+                .resources { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid ${theme.colors.border}; }
+                .resources-title { color: ${theme.colors.textMuted}; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+                .resource-link { display: inline-block; color: ${theme.colors.accentHover}; background: ${theme.colors.accent}15; padding: 0.4rem 0.8rem; border-radius: 4px; font-size: 0.85rem; text-decoration: none; }
+            `;
+
+            const previewHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    ${googleFontLink}
+                    <style>${previewStyles}</style>
+                </head>
+                <body>
+                    ${theme.brand.name || theme.brand.logo ? `
+                        <div class="brand">
+                            ${theme.brand.logo ? (theme.brand.website
+                                ? `<a href="${theme.brand.website}" target="_blank"><img src="${theme.brand.logo}" alt="Logo"></a>`
+                                : `<img src="${theme.brand.logo}" alt="Logo">`)
+                            : ''}
+                            ${theme.brand.name ? (theme.brand.website
+                                ? `<a href="${theme.brand.website}" target="_blank"><span>${theme.brand.name}</span></a>`
+                                : `<span>${theme.brand.name}</span>`)
+                            : ''}
+                        </div>
+                    ` : ''}
+                    <h1>Welcome to the Scenario</h1>
+                    <p>This is a preview of how your theme will look in the navigator. The colors and branding you configure will be applied throughout the interface.</p>
+
+                    <div class="choices">
+                        <button class="btn btn-choice">Choice A</button>
+                        <button class="btn btn-visited">Visited ✓</button>
+                        <button class="btn btn-explored">Explored</button>
+                    </div>
+
+                    <button class="btn btn-restart">Start Over</button>
+
+                    <div class="map-preview">
+                        <div class="map-title">Map Preview</div>
+                        <div class="nodes">
+                            <div class="node node-visited">Start</div>
+                            <div class="node node-current">Current</div>
+                            <div class="node node-unvisited">Future</div>
+                        </div>
+                    </div>
+
+                    <div class="resources">
+                        <div class="resources-title">Resources</div>
+                        <a href="#" class="resource-link">📎 Download Guide</a>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            return (
+                <iframe
+                    className="preview-frame"
+                    srcDoc={previewHTML}
+                    title="Theme Preview"
+                />
+            );
+        };
+
+        // ============================================================
+        // MAIN THEME EDITOR COMPONENT
+        // ============================================================
+        const ThemeEditor = () => {
+            const [theme, setTheme] = useState(null);
+            const [hasChanges, setHasChanges] = useState(false);
+            const [fileName, setFileName] = useState('theme.json');
+            const [isLoading, setIsLoading] = useState(true);
+            const fileInputRef = useRef(null);
+
+            // Helper to deep merge theme with defaults
+            const mergeWithDefaults = (data) => ({
+                brand: {
+                    ...defaultTheme.brand,
+                    ...data.brand,
+                    position: { ...defaultTheme.brand.position, ...(data.brand?.position || {}) }
+                },
+                typography: { ...defaultTheme.typography, ...data.typography },
+                colors: { ...defaultTheme.colors, ...data.colors },
+                buttons: { ...defaultTheme.buttons, ...data.buttons },
+                map: { ...defaultTheme.map, ...data.map }
+            });
+
+            // Load defaults.json first, then theme.json
+            useEffect(() => {
+                const cacheBuster = '?v=' + Date.now();
+
+                fetch('defaults.json' + cacheBuster)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Failed to load defaults.json');
+                        return res.json();
+                    })
+                    .then(defaults => {
+                        fontOptions = defaults.fontOptions;
+                        defaultTheme = defaults.defaultTheme;
+
+                        // Now load existing theme
+                        return fetch('theme.json' + cacheBuster);
+                    })
+                    .then(res => res.ok ? res.json() : defaultTheme)
+                    .catch(() => defaultTheme)
+                    .then(data => {
+                        setTheme(mergeWithDefaults(data));
+                        setIsLoading(false);
+                    });
+            }, []);
+
+            const updateBrand = (key, value) => {
+                setTheme(prev => ({ ...prev, brand: { ...prev.brand, [key]: value } }));
+                setHasChanges(true);
+            };
+
+            const updateBrandPosition = (key, value) => {
+                setTheme(prev => ({
+                    ...prev,
+                    brand: {
+                        ...prev.brand,
+                        position: { ...prev.brand.position, [key]: value }
+                    }
+                }));
+                setHasChanges(true);
+            };
+
+            const updateTypography = (key, value) => {
+                setTheme(prev => ({ ...prev, typography: { ...prev.typography, [key]: value } }));
+                setHasChanges(true);
+            };
+
+            const updateColor = (key, value) => {
+                setTheme(prev => ({ ...prev, colors: { ...prev.colors, [key]: value } }));
+                setHasChanges(true);
+            };
+
+            const updateButton = (key, value) => {
+                setTheme(prev => ({ ...prev, buttons: { ...prev.buttons, [key]: value } }));
+                setHasChanges(true);
+            };
+
+            const updateMap = (key, value) => {
+                setTheme(prev => ({ ...prev, map: { ...prev.map, [key]: value } }));
+                setHasChanges(true);
+            };
+
+            const handleSave = () => {
+                const json = JSON.stringify(theme, null, 4);
+                const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+                setHasChanges(false);
+            };
+
+            const handleLoad = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setFileName(file.name);
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        try {
+                            const data = JSON.parse(ev.target.result);
+                            setTheme(mergeWithDefaults(data));
+                            setHasChanges(false);
+                        } catch (err) {
+                            alert('Error loading file: ' + err.message);
+                        }
+                    };
+                    reader.readAsText(file, 'UTF-8');
+                }
+                e.target.value = '';
+            };
+
+            const handleReset = () => {
+                if (confirm('Reset all colors to default?')) {
+                    setTheme({ ...defaultTheme });
+                    setHasChanges(true);
+                }
+            };
+
+            // Show loading state while defaults load
+            if (isLoading || !theme) {
+                return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#6b7280' }}>Loading...</div>;
+            }
+
+            return (
+                <div className="editor-container">
+                    <div className="sidebar">
+                        <div className="sidebar-header">
+                            <h1>Theme Editor</h1>
+                            <div className="sidebar-actions">
+                                <button className="btn btn-secondary" onClick={() => fileInputRef.current?.click()}>Open</button>
+                                <button className="btn btn-primary" onClick={handleSave}>Save</button>
+                                <button className="btn btn-danger" onClick={handleReset}>Reset</button>
+                            </div>
+                            <input ref={fileInputRef} type="file" accept=".json" className="hidden-input" onChange={handleLoad} />
+                        </div>
+
+                        <div className="sidebar-content">
+                            {/* Brand Section */}
+                            <div className="section">
+                                <h3>🏢 Brand</h3>
+                                <div className="form-group">
+                                    <label className="form-label">Company Name</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={theme.brand.name}
+                                        onChange={(e) => updateBrand('name', e.target.value)}
+                                        placeholder="Your Company"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Logo URL</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={theme.brand.logo}
+                                        onChange={(e) => updateBrand('logo', e.target.value)}
+                                        placeholder="https://example.com/logo.png"
+                                    />
+                                    {theme.brand.logo && <img src={theme.brand.logo} alt="Logo preview" className="logo-preview" onError={(e) => e.target.style.display = 'none'} />}
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Website URL (makes logo and name clickable)</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        value={theme.brand.website}
+                                        onChange={(e) => updateBrand('website', e.target.value)}
+                                        placeholder="https://example.com"
+                                    />
+                                </div>
+                                <div className="position-grid">
+                                    <div className="form-group">
+                                        <label className="form-label">Vertical Position</label>
+                                        <select
+                                            className="form-select"
+                                            value={theme.brand.position?.vertical || 'top'}
+                                            onChange={(e) => updateBrandPosition('vertical', e.target.value)}
+                                        >
+                                            <option value="top">Top</option>
+                                            <option value="bottom">Bottom</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Horizontal Position</label>
+                                        <select
+                                            className="form-select"
+                                            value={theme.brand.position?.horizontal || 'right'}
+                                            onChange={(e) => updateBrandPosition('horizontal', e.target.value)}
+                                        >
+                                            <option value="left">Left</option>
+                                            <option value="center">Center</option>
+                                            <option value="right">Right</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Typography Section */}
+                            <div className="section">
+                                <h3>🔤 Typography</h3>
+                                <div className="form-group">
+                                    <label className="form-label">Font Family</label>
+                                    <select
+                                        className="form-select"
+                                        value={theme.typography?.fontFamily || 'system'}
+                                        onChange={(e) => updateTypography('fontFamily', e.target.value)}
+                                    >
+                                        {Object.entries(fontOptions).map(([key, font]) => (
+                                            <option key={key} value={key}>{font.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Colors Section */}
+                            <div className="section">
+                                <h3>🎨 Base Colors</h3>
+                                <div className="color-grid">
+                                    <ColorInput label="Background" value={theme.colors.background} onChange={(v) => updateColor('background', v)} />
+                                    <ColorInput label="Text" value={theme.colors.text} onChange={(v) => updateColor('text', v)} />
+                                    <ColorInput label="Text Secondary" value={theme.colors.textSecondary} onChange={(v) => updateColor('textSecondary', v)} />
+                                    <ColorInput label="Text Muted" value={theme.colors.textMuted} onChange={(v) => updateColor('textMuted', v)} />
+                                    <ColorInput label="Accent" value={theme.colors.accent} onChange={(v) => updateColor('accent', v)} />
+                                    <ColorInput label="Accent Hover" value={theme.colors.accentHover} onChange={(v) => updateColor('accentHover', v)} />
+                                    <ColorInput label="Success" value={theme.colors.success} onChange={(v) => updateColor('success', v)} />
+                                    <ColorInput label="Warning" value={theme.colors.warning} onChange={(v) => updateColor('warning', v)} />
+                                    <ColorInput label="Border" value={theme.colors.border} onChange={(v) => updateColor('border', v)} />
+                                </div>
+                            </div>
+
+                            {/* Buttons Section */}
+                            <div className="section">
+                                <h3>🔘 Buttons</h3>
+                                <div className="color-grid">
+                                    <ColorInput label="Choice Background" value={theme.buttons.choiceBackground} onChange={(v) => updateButton('choiceBackground', v)} />
+                                    <ColorInput label="Choice Text" value={theme.buttons.choiceText} onChange={(v) => updateButton('choiceText', v)} />
+                                    <ColorInput label="Visited Background" value={theme.buttons.visitedBackground} onChange={(v) => updateButton('visitedBackground', v)} />
+                                    <ColorInput label="Visited Text" value={theme.buttons.visitedText} onChange={(v) => updateButton('visitedText', v)} />
+                                    <ColorInput label="Explored Background" value={theme.buttons.exploredBackground} onChange={(v) => updateButton('exploredBackground', v)} />
+                                    <ColorInput label="Explored Text" value={theme.buttons.exploredText} onChange={(v) => updateButton('exploredText', v)} />
+                                    <ColorInput label="Restart Background" value={theme.buttons.restartBackground} onChange={(v) => updateButton('restartBackground', v)} />
+                                    <ColorInput label="Restart Text" value={theme.buttons.restartText} onChange={(v) => updateButton('restartText', v)} />
+                                </div>
+                            </div>
+
+                            {/* Map Section */}
+                            <div className="section">
+                                <h3>🗺️ Map</h3>
+                                <div className="color-grid">
+                                    <ColorInput label="Current Node" value={theme.map.nodeCurrent} onChange={(v) => updateMap('nodeCurrent', v)} />
+                                    <ColorInput label="Current Text" value={theme.map.nodeCurrentText} onChange={(v) => updateMap('nodeCurrentText', v)} />
+                                    <ColorInput label="Visited Node" value={theme.map.nodeVisited} onChange={(v) => updateMap('nodeVisited', v)} />
+                                    <ColorInput label="Visited Text" value={theme.map.nodeVisitedText} onChange={(v) => updateMap('nodeVisitedText', v)} />
+                                    <ColorInput label="Unvisited Node" value={theme.map.nodeUnvisited} onChange={(v) => updateMap('nodeUnvisited', v)} />
+                                    <ColorInput label="Unvisited Text" value={theme.map.nodeUnvisitedText} onChange={(v) => updateMap('nodeUnvisitedText', v)} />
+                                    <ColorInput label="Unvisited Border" value={theme.map.nodeUnvisitedBorder} onChange={(v) => updateMap('nodeUnvisitedBorder', v)} />
+                                    <ColorInput label="Line Visited" value={theme.map.lineVisited} onChange={(v) => updateMap('lineVisited', v)} />
+                                    <ColorInput label="Line Unvisited" value={theme.map.lineUnvisited} onChange={(v) => updateMap('lineUnvisited', v)} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="preview-panel">
+                        <div className="preview-header">
+                            <h2>Live Preview</h2>
+                            <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>Changes are reflected in real-time</span>
+                        </div>
+                        <div className="preview-content">
+                            <Preview theme={theme} />
+                        </div>
+                        <div className="status-bar">
+                            <span className={hasChanges ? 'status-unsaved' : 'status-saved'}>
+                                {hasChanges ? '● Unsaved changes' : '✓ No changes'}
+                            </span>
+                            <span>{fileName}</span>
+                        </div>
+                    </div>
+
+                    <div className="credits">
+                        Created by <a href="https://ai-know.pro" target="_blank" rel="noopener noreferrer">Paolo Dalprato</a>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<ThemeEditor />);
+    </script>
+</body>
+</html>

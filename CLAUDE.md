@@ -17,8 +17,14 @@ Interactive decision-tree framework for educational scenarios, training, and sto
 branching-navigator/
 ├── branching-navigator.html    # Main navigator engine
 ├── scenario-editor.html        # Visual editor for scenarios
-├── config.json                 # Configuration (scenario file)
+├── theme-editor.html           # Visual editor for themes
+├── config.json                 # Configuration (scenario + theme files)
+├── defaults.json               # Shared defaults (fontOptions, defaultTheme)
 ├── scenario-*.json             # Scenario data files
+├── theme.json                  # Theme configuration (colors, branding)
+├── start-navigator.bat         # Launch navigator (port 8000)
+├── start-editor.bat            # Launch scenario editor (port 8000)
+├── start-theme-editor.bat      # Launch theme editor (port 8000)
 ├── docs/                       # Downloadable resources
 └── images/                     # Screenshots for README
 ```
@@ -99,8 +105,61 @@ All content uses plain strings (monolingual):
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `scenario` | string | required | JSON file to load |
+| `scenario` | string | required | Scenario JSON file to load |
+| `theme` | string | `"theme.json"` | Theme JSON file to load |
 | `showCredits` | boolean | `true` | Show author credits |
+
+## Defaults (defaults.json)
+
+Centralized definitions shared between navigator and theme editor:
+
+```json
+{
+    "fontOptions": {
+        "system": { "name": "System Default", "family": "...", "google": false },
+        "inter": { "name": "Inter", "family": "'Inter', sans-serif", "google": true }
+        // ... other Google Fonts
+    },
+    "defaultTheme": {
+        "brand": { "name": "", "logo": "", "website": "", "position": {...} },
+        "typography": { "fontFamily": "system" },
+        "colors": { "background": "#ffffff", "text": "#1f2937", ... },
+        "buttons": { "choiceBackground": "#6366f1", ... },
+        "map": { "nodeCurrent": "#6366f1", ... }
+    }
+}
+```
+
+**⚠️ Required**: Both `branching-navigator.html` and `theme-editor.html` load this file at startup. It must be present for the application to work.
+
+## Theme Structure
+
+Theme files define colors and branding. All values are optional (defaults from `defaults.json` are applied):
+
+```json
+{
+    "brand": {
+        "name": "Company Name",
+        "logo": "https://example.com/logo.png",
+        "website": "https://example.com"
+    },
+    "colors": {
+        "background": "#ffffff",
+        "text": "#1f2937",
+        "accent": "#6366f1"
+    },
+    "buttons": {
+        "choiceBackground": "#6366f1",
+        "visitedBackground": "#10b981"
+    },
+    "map": {
+        "nodeCurrent": "#6366f1",
+        "nodeVisited": "#3730a3"
+    }
+}
+```
+
+Multiple theme files can be created (e.g., `theme-dark.json`, `theme-corporate.json`) and switched via `config.json`.
 
 ## Review Focus
 

@@ -1,0 +1,46 @@
+{
+    "brand": {
+        "name": "",
+        "logo": "",
+        "website": "",
+        "position": {
+            "vertical": "top",
+            "horizontal": "right"
+        }
+    },
+    "typography": {
+        "fontFamily": "system"
+    },
+    "colors": {
+        "background": "#ffffff",
+        "text": "#1f2937",
+        "textSecondary": "#4b5563",
+        "textMuted": "#6b7280",
+        "accent": "#6366f1",
+        "accentHover": "#4f46e5",
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "border": "#e5e7eb"
+    },
+    "buttons": {
+        "choiceBackground": "#6366f1",
+        "choiceText": "#ffffff",
+        "visitedBackground": "#10b981",
+        "visitedText": "#ffffff",
+        "exploredBackground": "#4b5563",
+        "exploredText": "#ffffff",
+        "restartBackground": "#f59e0b",
+        "restartText": "#ffffff"
+    },
+    "map": {
+        "nodeVisited": "#3730a3",
+        "nodeVisitedText": "#ffffff",
+        "nodeCurrent": "#6366f1",
+        "nodeCurrentText": "#ffffff",
+        "nodeUnvisited": "#f3f4f6",
+        "nodeUnvisitedText": "#6b7280",
+        "nodeUnvisitedBorder": "#9ca3af",
+        "lineVisited": "#6366f1",
+        "lineUnvisited": "#d1d5db"
+    }
+}

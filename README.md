@@ -13,6 +13,9 @@ An interactive branching narrative framework for creating decision-tree based ex
 - **Simple JSON Format**: Plain strings for all content, no complex structures
 - **JSON-Based Content**: Easy-to-edit scenario files, no coding required for content changes
 - **Visual Scenario Editor**: Dedicated tool for creating and managing scenarios
+- **Visual Theme Editor**: Customize colors, branding, and fonts with live preview
+- **Company Branding**: Add logo, company name, and website link
+- **Google Fonts Support**: Choose from 9 font families including Inter, Roboto, Poppins
 - **Resource Attachments**: Add downloads, links, and videos to any node
 - **Progress Tracking**: Visual indicators for visited paths and current step
 - **Backtracking**: Users can navigate back through their journey (via buttons; map jumps reset the path)
@@ -31,14 +34,18 @@ An interactive branching narrative framework for creating decision-tree based ex
 
 ```
 branching-navigator/
-├── config.json                 # Configuration (scenario file)
+├── config.json                 # Configuration (scenario + theme files)
+├── defaults.json               # Shared defaults (fonts, theme fallbacks)
 ├── branching-navigator.html    # Main navigator engine
 ├── scenario-editor.html        # Visual editor for creating scenarios
+├── theme-editor.html           # Visual editor for customizing themes
+├── theme.json                  # Theme configuration (colors, branding)
 ├── scenario-quiz.json          # Example: quiz with correct/wrong feedback
 ├── scenario-workflow.json      # Example: customer support escalation
 ├── scenario-sample.json        # Template: narrative with multiple paths
 ├── start-navigator.bat         # Quick start for navigator (Windows)
 ├── start-editor.bat            # Quick start for editor (Windows)
+├── start-theme-editor.bat      # Quick start for theme editor (Windows)
 ├── README.md                   # This file
 ├── LICENSE                     # MIT License
 └── docs/                       # Folder for downloadable resources
@@ -50,7 +57,8 @@ branching-navigator/
 ### Option 1: Using Start Scripts (Windows)
 
 - Double-click `start-navigator.bat` to run the navigator
-- Double-click `start-editor.bat` to run the editor
+- Double-click `start-editor.bat` to run the scenario editor
+- Double-click `start-theme-editor.bat` to run the theme editor
 
 ### Option 2: Manual Start
 
@@ -71,11 +79,12 @@ Upload all files to any web server or static hosting (GitHub Pages, Netlify, Ver
 
 ## ⚙️ Configuration
 
-The `config.json` file controls which scenario to load:
+The `config.json` file controls which scenario and theme to load:
 
 ```json
 {
     "scenario": "scenario-sample.json",
+    "theme": "theme.json",
     "showCredits": true
 }
 ```
@@ -83,9 +92,10 @@ The `config.json` file controls which scenario to load:
 | Field | Description |
 |-------|-------------|
 | `scenario` | JSON file containing the scenario data |
+| `theme` | JSON file containing theme/branding (optional, defaults to `theme.json`) |
 | `showCredits` | Show author credits footer (optional, defaults to `true`) |
 
-To switch scenarios, simply change the `scenario` value and refresh.
+To switch scenarios or themes, change the values and refresh.
 
 ## 🎨 Using the Scenario Editor
 
@@ -130,6 +140,82 @@ When deleting a node that has child nodes connected to it:
 - They appear in the Map view with a red border and "orphan" badge
 
 **Best practice**: Delete nodes from the leaves (end nodes) upward, or manually reconnect orphaned nodes to other parent nodes before saving.
+
+## 🎨 Using the Theme Editor
+
+The theme editor allows you to customize the navigator's appearance with your company branding.
+
+### Accessing the Theme Editor
+
+```
+http://localhost:8000/theme-editor.html
+```
+
+### Theme Editor Features
+
+- **Live Preview**: See changes in real-time as you edit
+- **Company Branding**: Add logo, company name, and website URL
+- **Brand Positioning**: Place logo/name in any corner (top/bottom, left/center/right)
+- **Color Customization**: Customize all colors (background, text, buttons, map nodes)
+- **Font Selection**: Choose from 9 font families (System Default + 8 Google Fonts)
+- **Import/Export**: Load and save theme files
+
+### Available Fonts
+
+| Key | Font |
+|-----|------|
+| `system` | System Default (no external load) |
+| `inter` | Inter |
+| `roboto` | Roboto |
+| `open-sans` | Open Sans |
+| `lato` | Lato |
+| `montserrat` | Montserrat |
+| `poppins` | Poppins |
+| `source-sans` | Source Sans 3 |
+| `nunito` | Nunito |
+
+### Theme File Structure
+
+```json
+{
+    "brand": {
+        "name": "Your Company",
+        "logo": "https://example.com/logo.png",
+        "website": "https://example.com",
+        "position": { "vertical": "top", "horizontal": "right" }
+    },
+    "typography": {
+        "fontFamily": "inter"
+    },
+    "colors": {
+        "background": "#ffffff",
+        "text": "#1f2937",
+        "accent": "#6366f1"
+    },
+    "buttons": {
+        "choiceBackground": "#6366f1",
+        "visitedBackground": "#10b981"
+    },
+    "map": {
+        "nodeCurrent": "#6366f1",
+        "nodeVisited": "#3730a3"
+    }
+}
+```
+
+All values are optional. Missing values use defaults from `defaults.json`.
+
+### Multiple Themes
+
+Create multiple theme files for different clients or contexts:
+
+```
+├── theme-corporate.json
+├── theme-training.json
+├── theme-dark.json
+```
+
+Switch between them by changing the `theme` value in `config.json`.
 
 ## 📝 JSON Structure
 

@@ -10,17 +10,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #ffffff; color: #1f2937; min-height: 100vh; }
         .editor-container { display: flex; height: 100vh; }
-        .sidebar { width: 280px; background: #16213e; border-right: 1px solid #2a2a4a; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 1rem; border-bottom: 1px solid #2a2a4a; }
-        .sidebar-header h1 { font-size: 1.25rem; margin: 0 0 0.5rem 0; color: #fff; }
+        .sidebar { width: 280px; background: #f9fafb; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
+        .sidebar-header h1 { font-size: 1.25rem; margin: 0 0 0.5rem 0; color: #111827; }
         .sidebar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .btn { padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: none; transition: all 0.2s; }
         .btn-primary { background: #6366f1; color: white; }
         .btn-primary:hover { background: #5558e3; }
-        .btn-secondary { background: #374151; color: #e0e0e0; }
-        .btn-secondary:hover { background: #4b5563; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background: #d1d5db; }
         .btn-success { background: #10b981; color: white; }
         .btn-success:hover { background: #059669; }
         .btn-danger { background: #ef4444; color: white; text-transform: uppercase; font-weight: 600; }
@@ -28,53 +28,53 @@
         .btn-close { background: #ef4444; color: white; text-transform: uppercase; font-weight: 600; }
         .btn-close:hover { background: #dc2626; }
         .node-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
-        .node-item { padding: 0.75rem; margin-bottom: 0.5rem; background: #1a1a2e; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
-        .node-item:hover { border-color: #4b5563; }
-        .node-item.selected { border-color: #6366f1; background: #1e1e3f; }
+        .node-item { padding: 0.75rem; margin-bottom: 0.5rem; background: #ffffff; border-radius: 8px; cursor: pointer; border: 2px solid #e5e7eb; transition: all 0.2s; }
+        .node-item:hover { border-color: #9ca3af; }
+        .node-item.selected { border-color: #6366f1; background: #eef2ff; }
         .node-item.start-node { border-left: 3px solid #10b981; }
         .node-item.terminal { border-left: 3px solid #f59e0b; }
-        .node-title { font-weight: 600; color: #fff; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .node-title { font-weight: 600; color: #111827; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .node-id-small { font-size: 0.7rem; color: #6b7280; font-family: monospace; margin-top: 0.15rem; }
         .node-badges { display: flex; gap: 0.25rem; margin-top: 0.5rem; flex-wrap: wrap; }
-        .badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; background: #374151; color: #9ca3af; }
-        .badge-start { background: #065f46; color: #6ee7b7; }
-        .badge-terminal { background: #78350f; color: #fcd34d; }
+        .badge { font-size: 0.65rem; padding: 0.15rem 0.4rem; border-radius: 4px; background: #e5e7eb; color: #4b5563; }
+        .badge-start { background: #d1fae5; color: #065f46; }
+        .badge-terminal { background: #fef3c7; color: #92400e; }
         .main-editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .editor-header { padding: 1rem; background: #16213e; border-bottom: 1px solid #2a2a4a; display: flex; justify-content: space-between; align-items: center; }
-        .lang-indicator { background: #3730a3; color: #a5b4fc; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; margin-left: 1rem; }
-        .editor-content { flex: 1; overflow-y: auto; padding: 1.5rem; }
-        .form-section { background: #16213e; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; }
-        .form-section h3 { margin: 0 0 1rem 0; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 0.5rem; }
+        .editor-header { padding: 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .lang-indicator { background: #e0e7ff; color: #4338ca; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; margin-left: 1rem; }
+        .editor-content { flex: 1; overflow-y: auto; padding: 1.5rem; background: #ffffff; }
+        .form-section { background: #f9fafb; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; }
+        .form-section h3 { margin: 0 0 1rem 0; font-size: 1rem; color: #111827; display: flex; align-items: center; gap: 0.5rem; }
         .form-group { margin-bottom: 1rem; }
         .form-group:last-child { margin-bottom: 0; }
-        .form-label { display: block; font-size: 0.8rem; color: #9ca3af; margin-bottom: 0.4rem; }
-        .form-input { width: 100%; padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #374151; background: #1a1a2e; color: #e0e0e0; font-size: 0.9rem; }
+        .form-label { display: block; font-size: 0.8rem; color: #6b7280; margin-bottom: 0.4rem; }
+        .form-input { width: 100%; padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #1f2937; font-size: 0.9rem; }
         .form-input:focus { outline: none; border-color: #6366f1; }
         .form-textarea { min-height: 120px; resize: vertical; font-family: monospace; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-row.single { grid-template-columns: 1fr; }
-        .choice-item, .resource-item { background: #1a1a2e; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid #374151; }
+        .choice-item, .resource-item { background: #ffffff; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid #e5e7eb; }
         .choice-header, .resource-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
         .choice-number { font-size: 0.8rem; color: #6366f1; font-weight: 600; }
-        .form-select { padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #374151; background: #1a1a2e; color: #e0e0e0; font-size: 0.9rem; width: 100%; }
+        .form-select { padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #1f2937; font-size: 0.9rem; width: 100%; }
         .form-select:focus { outline: none; border-color: #6366f1; }
-                .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .modal-content { background: #16213e; border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; border: 1px solid #2a2a4a; }
+                .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: #ffffff; border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; border: 1px solid #e5e7eb; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
-        .modal-header h2, .modal-header h3 { margin: 0; color: #fff; }
+        .modal-header h2, .modal-header h3 { margin: 0; color: #111827; }
         .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
-        .empty-state h2 { color: #9ca3af; margin-bottom: 0.5rem; }
-        .status-bar { padding: 0.5rem 1rem; background: #0f0f1a; border-top: 1px solid #2a2a4a; font-size: 0.75rem; color: #6b7280; display: flex; justify-content: space-between; }
+        .empty-state h2 { color: #374151; margin-bottom: 0.5rem; }
+        .status-bar { padding: 0.5rem 1rem; background: #f9fafb; border-top: 1px solid #e5e7eb; font-size: 0.75rem; color: #6b7280; display: flex; justify-content: space-between; }
         .status-saved { color: #10b981; }
         .status-unsaved { color: #f59e0b; }
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1a1a2e; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: #f3f4f6; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
         .hidden-input { display: none; }
-        .map-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 20, 0.95); z-index: 200; display: flex; flex-direction: column; }
-        .map-overlay-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #2a2a4a; background: #16213e; }
-        .map-overlay-header h2 { margin: 0; color: #fff; font-size: 1.25rem; }
-        .map-legend { display: flex; gap: 1.5rem; font-size: 0.8rem; color: #9ca3af; }
+        .map-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 200; display: flex; flex-direction: column; }
+        .map-overlay-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
+        .map-overlay-header h2 { margin: 0; color: #111827; font-size: 1.25rem; }
+        .map-legend { display: flex; gap: 1.5rem; font-size: 0.8rem; color: #6b7280; }
         .map-legend span { display: flex; align-items: center; gap: 0.4rem; }
         .legend-dot { width: 12px; height: 12px; border-radius: 3px; border: 2px solid; }
         .legend-start { border-color: #10b981; background: #065f46; }
@@ -83,12 +83,12 @@
         .legend-orphan { border-color: #ef4444; background: #7f1d1d; }
         .map-overlay-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; }
         .welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem; }
-        .welcome-screen h2 { color: #fff; font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .welcome-screen p { color: #9ca3af; margin-bottom: 2rem; max-width: 400px; }
+        .welcome-screen h2 { color: #111827; font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .welcome-screen p { color: #6b7280; margin-bottom: 2rem; max-width: 400px; }
         .welcome-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
         .welcome-actions .btn { padding: 0.75rem 1.5rem; font-size: 1rem; }
-        .credits { position: fixed; bottom: 0.5rem; left: 0.5rem; color: rgba(255, 255, 255, 0.3); font-size: 0.65rem; z-index: 10; }
-        .credits a { color: rgba(255, 255, 255, 0.4); text-decoration: none; }
+        .credits { position: fixed; bottom: 0.5rem; left: 0.5rem; color: #9ca3af; font-size: 0.65rem; z-index: 10; }
+        .credits a { color: #9ca3af; text-decoration: none; }
         .credits a:hover { color: #6366f1; }
     </style>
 </head>
@@ -182,19 +182,19 @@
                     </div>
                     <div className="map-overlay-content">
                         <svg width={Math.max(maxWidth + padding * 2, 400)} height={Math.max((maxLevel + 1) * levelHeight + padding, 300)} style={{ display: 'block', margin: 'auto' }}>
-                            {connections.map((conn, i) => <line key={i} x1={conn.from.x} y1={conn.from.y + nodeHeight/2} x2={conn.to.x} y2={conn.to.y - nodeHeight/2} stroke="#4b5563" strokeWidth={2} />)}
+                            {connections.map((conn, i) => <line key={i} x1={conn.from.x} y1={conn.from.y + nodeHeight/2} x2={conn.to.x} y2={conn.to.y - nodeHeight/2} stroke="#d1d5db" strokeWidth={2} />)}
                             {Object.entries(positions).map(([nodeId, pos]) => {
                                 const isSelected = nodeId === selectedNode, isStart = nodeId === startNode, isEnd = isTerminal(nodeId), orphan = isOrphan(nodeId);
-                                let fill = '#1a1a2e', stroke = '#4b5563', sw = 2;
-                                if (isSelected) { fill = '#3730a3'; stroke = '#818cf8'; sw = 3; }
+                                let fill = '#f3f4f6', stroke = '#9ca3af', sw = 2, textFill = '#374151';
+                                if (isSelected) { fill = '#e0e7ff'; stroke = '#818cf8'; sw = 3; textFill = '#3730a3'; }
                                 if (isStart) stroke = '#10b981'; else if (orphan) stroke = '#ef4444'; else if (isEnd) stroke = '#f59e0b';
                                 const content = nodes[nodeId]?.content || '';
                                 const title = content.match(/^#\s+(.+)$/m)?.[1]?.slice(0, 15) || nodeId;
                                 return (
                                     <g key={nodeId} style={{ cursor: 'pointer' }} onClick={() => { onSelectNode(nodeId); onClose(); }}>
                                         <rect x={pos.x - nodeWidth/2 + 10} y={pos.y - nodeHeight/2} width={nodeWidth - 20} height={nodeHeight} rx={8} fill={fill} stroke={stroke} strokeWidth={sw} />
-                                        <text x={pos.x} y={pos.y - 6} textAnchor="middle" dominantBaseline="middle" fill="#fff" fontSize="11" fontWeight="500">{title.length > 15 ? title.slice(0, 12) + '...' : title}</text>
-                                        <text x={pos.x} y={pos.y + 10} textAnchor="middle" dominantBaseline="middle" fill="#9ca3af" fontSize="9" fontFamily="monospace">{nodeId.length > 14 ? nodeId.slice(0, 12) + '..' : nodeId}</text>
+                                        <text x={pos.x} y={pos.y - 6} textAnchor="middle" dominantBaseline="middle" fill={textFill} fontSize="11" fontWeight="500">{title.length > 15 ? title.slice(0, 12) + '...' : title}</text>
+                                        <text x={pos.x} y={pos.y + 10} textAnchor="middle" dominantBaseline="middle" fill="#6b7280" fontSize="9" fontFamily="monospace">{nodeId.length > 14 ? nodeId.slice(0, 12) + '..' : nodeId}</text>
                                     </g>
                                 );
                             })}
@@ -226,7 +226,7 @@
             const getNodeLevelInfo = (nodeId) => { const info = getNodeLevel(nodeId, scenario.nodes, startNode); return info.level === 0 ? 'orphan' : `L${info.level}-P${info.position}`; };
             return (
                 <>
-                    <div style={{ padding: '0.5rem', borderBottom: '1px solid #2a2a4a', display: 'flex', gap: '0.5rem' }}>
+                    <div style={{ padding: '0.5rem', borderBottom: '1px solid #e5e7eb', display: 'flex', gap: '0.5rem' }}>
                         <button className={`btn ${!showMap ? 'btn-primary' : 'btn-secondary'}`} onClick={() => onToggleMap(false)} style={{ flex: 1, fontSize: '0.75rem' }}>List</button>
                         <button className={`btn ${showMap ? 'btn-primary' : 'btn-secondary'}`} onClick={() => onToggleMap(true)} style={{ flex: 1, fontSize: '0.75rem' }}>Map</button>
                     </div>
@@ -449,7 +449,7 @@
                             <input type="text" className="form-input" value={localMeta.author || ''} onChange={(e) => setLocalMeta({ ...localMeta, author: e.target.value })} />
                         </div>
                         <hr style={{ borderColor: '#374151', margin: '1rem 0' }} />
-                        <h4 style={{ color: '#fff', marginBottom: '0.75rem' }}>UI Labels</h4>
+                        <h4 style={{ color: '#111827', marginBottom: '0.75rem' }}>UI Labels</h4>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                             {Object.keys(defaultTranslations).map(key => (
                                 <div key={key} className="form-group" style={{ marginBottom: '0.5rem' }}>

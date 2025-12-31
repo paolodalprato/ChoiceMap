@@ -10,15 +10,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* CSS variables are set dynamically by JavaScript from theme.json */
+
         * {
             box-sizing: border-box;
         }
-        
+
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+            background: var(--bg);
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -41,28 +43,28 @@
         }
         
         .slide-content h1 {
-            color: #fff;
+            color: var(--text);
             font-size: 2.5rem;
             margin-bottom: 1.5rem;
             font-weight: 600;
         }
-        
+
         .slide-content h2 {
-            color: #e0e0e0;
+            color: var(--text);
             font-size: 1.5rem;
             margin-bottom: 1rem;
             font-weight: 500;
         }
-        
+
         .slide-content p {
-            color: #b0b0b0;
+            color: var(--text-secondary);
             font-size: 1.125rem;
             line-height: 1.7;
             margin-bottom: 1rem;
         }
-        
+
         .slide-content ul {
-            color: #b0b0b0;
+            color: var(--text-secondary);
             font-size: 1.125rem;
             line-height: 1.7;
             margin-bottom: 1rem;
@@ -74,23 +76,23 @@
         }
         
         .slide-content blockquote {
-            border-left: 4px solid #6366f1;
+            border-left: 4px solid var(--accent);
             padding-left: 1rem;
             margin: 1.5rem 0;
-            color: #d0d0d0;
+            color: var(--text-secondary);
             font-style: italic;
-            background: rgba(99, 102, 241, 0.1);
+            background: color-mix(in srgb, var(--accent) 8%, transparent);
             padding: 1rem;
             border-radius: 0 8px 8px 0;
         }
-        
+
         .slide-content strong {
-            color: #fff;
+            color: var(--text);
             font-weight: 600;
         }
-        
+
         .slide-content em {
-            color: #c0c0c0;
+            color: var(--text-secondary);
         }
         
         .choices-container {
@@ -103,55 +105,57 @@
         }
         
         .choice-button {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-            color: white;
+            background: var(--choice-bg);
+            color: var(--choice-text);
             border: none;
             padding: 1rem 1.5rem;
             border-radius: 12px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 15px color-mix(in srgb, var(--choice-bg) 30%, transparent);
             min-width: 180px;
             text-align: center;
         }
-        
+
         .choice-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 6px 20px color-mix(in srgb, var(--choice-bg) 40%, transparent);
         }
-        
+
         .choice-button.visited {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            background: var(--visited-bg);
+            color: var(--visited-text);
+            box-shadow: 0 4px 15px color-mix(in srgb, var(--visited-bg) 30%, transparent);
         }
-        
+
         .choice-button.visited::after {
             content: ' ✓';
         }
-        
+
         .choice-button.explored {
-            background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-            border: 2px solid #6366f1;
-            box-shadow: 0 4px 15px rgba(75, 85, 99, 0.3);
+            background: var(--explored-bg);
+            color: var(--explored-text);
+            border: 2px solid var(--accent);
+            box-shadow: 0 4px 15px color-mix(in srgb, var(--explored-bg) 30%, transparent);
         }
         
         .progress-indicator {
             position: fixed;
             top: 1rem;
             left: 1rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
             font-size: 0.875rem;
             z-index: 100;
         }
-        
+
         .map-button {
             position: fixed;
             bottom: 1rem;
             right: 1rem;
-            background: rgba(99, 102, 241, 0.2);
-            border: 1px solid #6366f1;
-            color: #a5b4fc;
+            background: color-mix(in srgb, var(--accent) 10%, transparent);
+            border: 1px solid var(--accent);
+            color: var(--accent-hover);
             padding: 0.75rem 1.25rem;
             border-radius: 8px;
             cursor: pointer;
@@ -161,32 +165,32 @@
             gap: 0.5rem;
             z-index: 100;
         }
-        
+
         .map-button:hover {
-            background: rgba(99, 102, 241, 0.4);
+            background: color-mix(in srgb, var(--accent) 20%, transparent);
         }
-        
+
         .restart-button {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
+            background: var(--restart-bg);
+            color: var(--restart-text);
             border: none;
             padding: 1rem 2rem;
             border-radius: 12px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 4px 15px color-mix(in srgb, var(--restart-bg) 30%, transparent);
             margin-top: 1rem;
         }
-        
+
         .restart-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 6px 20px color-mix(in srgb, var(--restart-bg) 40%, transparent);
         }
-        
+
         .terminal-badge {
             display: inline-block;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: var(--success);
             color: white;
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -199,9 +203,9 @@
             top: 1rem;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.8);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
             padding: 0.5rem 1.25rem;
             border-radius: 20px;
             cursor: pointer;
@@ -212,10 +216,11 @@
             gap: 0.5rem;
             z-index: 50;
         }
-        
+
         .back-button:hover {
-            background: rgba(99, 102, 241, 0.3);
-            border-color: #6366f1;
+            background: color-mix(in srgb, var(--accent) 10%, transparent);
+            border-color: var(--accent);
+            color: var(--accent-hover);
         }
         
         .back-button svg {
@@ -226,33 +231,33 @@
         .resources-section {
             margin-top: 2rem;
             padding-top: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid var(--border);
         }
-        
+
         .resources-title {
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-muted);
             font-size: 0.875rem;
             margin-bottom: 1rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
-        
+
         .resource-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #a5b4fc;
+            color: var(--accent-hover);
             text-decoration: none;
             padding: 0.5rem 1rem;
-            background: rgba(99, 102, 241, 0.1);
+            background: color-mix(in srgb, var(--accent) 8%, transparent);
             border-radius: 6px;
             margin-right: 0.75rem;
             margin-bottom: 0.75rem;
             transition: all 0.3s ease;
         }
-        
+
         .resource-link:hover {
-            background: rgba(99, 102, 241, 0.2);
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
         }
         
         .map-overlay {
@@ -261,24 +266,24 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: var(--bg);
             z-index: 200;
             display: flex;
             flex-direction: column;
             padding: 1rem;
         }
-        
+
         .map-header {
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 1rem;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border);
             position: relative;
         }
-        
+
         .map-header h2 {
-            color: white;
+            color: var(--text);
             font-size: 1.5rem;
             margin: 0;
             text-align: center;
@@ -330,7 +335,7 @@
         }
         
         .tree-node.not-visited {
-            opacity: 0.4;
+            opacity: 0.7;
             cursor: default;
         }
         
@@ -342,29 +347,29 @@
             position: fixed;
             bottom: 0.5rem;
             left: 0.5rem;
-            color: rgba(255, 255, 255, 0.3);
+            color: var(--text-muted);
             font-size: 0.65rem;
             z-index: 10;
         }
 
         .credits a {
-            color: rgba(255, 255, 255, 0.4);
+            color: var(--text-muted);
             text-decoration: none;
         }
 
         .credits a:hover {
-            color: #6366f1;
+            color: var(--accent);
         }
-        
+
         .loading {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            color: white;
+            color: var(--text-secondary);
             font-size: 1.25rem;
         }
-        
+
         .error {
             display: flex;
             justify-content: center;
@@ -375,6 +380,47 @@
             flex-direction: column;
             gap: 1rem;
         }
+
+        .brand-header {
+            position: fixed;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 100;
+            padding: 0.5rem;
+        }
+
+        /* Vertical positioning */
+        .brand-header.pos-top { top: 0.75rem; }
+        .brand-header.pos-bottom { bottom: 0.75rem; }
+
+        /* Horizontal positioning */
+        .brand-header.pos-left { left: 1rem; }
+        .brand-header.pos-center { left: 50%; transform: translateX(-50%); }
+        .brand-header.pos-right { right: 1rem; }
+
+        /* Adjust center position when at bottom to not overlap credits */
+        .brand-header.pos-bottom.pos-left { left: 6rem; }
+
+        .brand-logo {
+            height: 32px;
+            width: auto;
+        }
+
+        .brand-name {
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .brand-name a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .brand-name a:hover {
+            color: var(--accent);
+        }
     </style>
 </head>
 <body>
@@ -382,6 +428,73 @@
     
     <script type="text/babel">
         const { useState, useEffect } = React;
+
+        // ============================================================
+        // Theme: Loaded from defaults.json, applied via CSS variables
+        // ============================================================
+
+        // These will be populated from defaults.json
+        let fontOptions = {};
+        let defaultTheme = {};
+
+        const loadGoogleFont = (fontKey) => {
+            const font = fontOptions[fontKey];
+            if (!font || !font.google) return;
+
+            const fontName = font.name.replace(/ /g, '+');
+            const linkId = 'google-font-link';
+            let link = document.getElementById(linkId);
+
+            if (!link) {
+                link = document.createElement('link');
+                link.id = linkId;
+                link.rel = 'stylesheet';
+                document.head.appendChild(link);
+            }
+            link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@400;500;600;700&display=swap`;
+        };
+
+        const applyTheme = (theme) => {
+            const root = document.documentElement;
+            const t = { ...defaultTheme, ...theme };
+            const c = { ...defaultTheme.colors, ...t.colors };
+            const b = { ...defaultTheme.buttons, ...t.buttons };
+            const m = { ...defaultTheme.map, ...t.map };
+            const typ = { ...defaultTheme.typography, ...t.typography };
+
+            // Apply font
+            const fontKey = typ.fontFamily || 'system';
+            const font = fontOptions[fontKey] || fontOptions['system'];
+            loadGoogleFont(fontKey);
+            root.style.setProperty('--font-family', font.family);
+
+            root.style.setProperty('--bg', c.background);
+            root.style.setProperty('--text', c.text);
+            root.style.setProperty('--text-secondary', c.textSecondary);
+            root.style.setProperty('--text-muted', c.textMuted);
+            root.style.setProperty('--accent', c.accent);
+            root.style.setProperty('--accent-hover', c.accentHover);
+            root.style.setProperty('--success', c.success);
+            root.style.setProperty('--warning', c.warning);
+            root.style.setProperty('--border', c.border);
+            root.style.setProperty('--choice-bg', b.choiceBackground);
+            root.style.setProperty('--choice-text', b.choiceText);
+            root.style.setProperty('--visited-bg', b.visitedBackground);
+            root.style.setProperty('--visited-text', b.visitedText);
+            root.style.setProperty('--explored-bg', b.exploredBackground);
+            root.style.setProperty('--explored-text', b.exploredText);
+            root.style.setProperty('--restart-bg', b.restartBackground);
+            root.style.setProperty('--restart-text', b.restartText);
+            root.style.setProperty('--map-node-visited', m.nodeVisited);
+            root.style.setProperty('--map-node-visited-text', m.nodeVisitedText);
+            root.style.setProperty('--map-node-current', m.nodeCurrent);
+            root.style.setProperty('--map-node-current-text', m.nodeCurrentText);
+            root.style.setProperty('--map-node-unvisited', m.nodeUnvisited);
+            root.style.setProperty('--map-node-unvisited-text', m.nodeUnvisitedText);
+            root.style.setProperty('--map-node-unvisited-border', m.nodeUnvisitedBorder);
+            root.style.setProperty('--map-line-visited', m.lineVisited);
+            root.style.setProperty('--map-line-unvisited', m.lineUnvisited);
+        };
 
         // ============================================================
         // Helper: Get text value (supports legacy language objects)
@@ -569,17 +682,17 @@
                             y1={conn.from.y + 20}
                             x2={conn.to.x}
                             y2={conn.to.y - 20}
-                            stroke={conn.visited ? '#6366f1' : '#444'}
+                            stroke={conn.visited ? 'var(--map-line-visited)' : 'var(--map-line-unvisited)'}
                             strokeWidth={conn.visited ? 3 : 2}
                             strokeDasharray={conn.visited ? 'none' : '5,5'}
                         />
                     ))}
-                    
+
                     {Object.keys(positions).map(nodeId => {
                         const pos = positions[nodeId];
                         const isVisited = visitedNodes.has(nodeId);
                         const isCurrent = nodeId === currentNode;
-                        
+
                         return (
                             <g
                                 key={nodeId}
@@ -593,14 +706,14 @@
                                     width={100}
                                     height={40}
                                     rx={8}
-                                    fill={isCurrent ? '#6366f1' : isVisited ? '#3730a3' : '#333'}
-                                    stroke={isCurrent ? '#a5b4fc' : isVisited ? '#6366f1' : '#555'}
+                                    fill={isCurrent ? 'var(--map-node-current)' : isVisited ? 'var(--map-node-visited)' : 'var(--map-node-unvisited)'}
+                                    stroke={isCurrent ? 'var(--map-line-visited)' : isVisited ? 'var(--map-line-visited)' : 'var(--map-node-unvisited-border)'}
                                     strokeWidth={2}
                                 />
                                 <text
                                     textAnchor="middle"
                                     dominantBaseline="middle"
-                                    fill={isVisited ? '#fff' : '#888'}
+                                    fill={isCurrent ? 'var(--map-node-current-text)' : isVisited ? 'var(--map-node-visited-text)' : 'var(--map-node-unvisited-text)'}
                                     fontSize="12"
                                     fontWeight={isCurrent ? 'bold' : 'normal'}
                                 >
@@ -618,6 +731,7 @@
         // ============================================================
         const BranchingNavigator = () => {
             const [config, setConfig] = useState(null);
+            const [theme, setTheme] = useState(defaultTheme);
             const [scenarioData, setScenarioData] = useState(null);
             const [currentNode, setCurrentNode] = useState(null);
             const [visitedNodes, setVisitedNodes] = useState(new Set());
@@ -628,19 +742,47 @@
             const [error, setError] = useState(null);
             const [translations, setTranslations] = useState({});
             const [scenarioFileName, setScenarioFileName] = useState('');
-            
-            // Load config, then scenario (cache busting to ensure fresh data)
+
+            // Load defaults, then config, then theme, then scenario
             useEffect(() => {
                 const cacheBuster = '?v=' + Date.now();
-                fetch('config.json' + cacheBuster)
+                let configData = null;
+
+                // First load defaults.json (fontOptions and defaultTheme)
+                fetch('defaults.json' + cacheBuster)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to load defaults.json');
+                        return response.json();
+                    })
+                    .then(defaults => {
+                        fontOptions = defaults.fontOptions;
+                        defaultTheme = defaults.defaultTheme;
+                        applyTheme(defaultTheme); // Apply defaults immediately
+
+                        // Then load config.json
+                        return fetch('config.json' + cacheBuster);
+                    })
                     .then(response => {
                         if (!response.ok) throw new Error('Failed to load config.json');
                         return response.json();
                     })
-                    .then(configData => {
-                        setConfig(configData);
-                        setScenarioFileName(configData.scenario);
+                    .then(data => {
+                        configData = data;
+                        setConfig(data);
+                        setScenarioFileName(data.scenario);
 
+                        // Load theme file (from config.theme or default "theme.json")
+                        const themeFile = data.theme || 'theme.json';
+                        return fetch(themeFile + cacheBuster);
+                    })
+                    .then(response => response.ok ? response.json() : defaultTheme)
+                    .catch(() => defaultTheme)
+                    .then(themeData => {
+                        const mergedTheme = { ...defaultTheme, ...themeData };
+                        setTheme(mergedTheme);
+                        applyTheme(mergedTheme);
+
+                        // Now load scenario
                         return fetch(configData.scenario + cacheBuster);
                     })
                     .then(response => {
@@ -652,12 +794,12 @@
                         setCurrentNode(data.startNode);
                         setVisitedNodes(new Set([data.startNode]));
                         setPath([data.startNode]);
-                        
+
                         // Load translations from scenario
                         if (data.translations) {
                             setTranslations(data.translations);
                         }
-                        
+
                         setLoading(false);
                     })
                     .catch(err => {
@@ -716,7 +858,11 @@
             
             const canGoBack = path.length > 1;
             const showCredits = config?.showCredits !== false;
-            
+            const brand = theme?.brand || {};
+            const hasBrand = brand.name || brand.logo;
+            const brandPosition = brand.position || { vertical: 'top', horizontal: 'right' };
+            const brandPosClass = `pos-${brandPosition.vertical} pos-${brandPosition.horizontal}`;
+
             if (loading) {
                 return <div className="loading">Loading...</div>;
             }
@@ -755,10 +901,31 @@
                                 {t.back}
                             </button>
                         )}
-                        
+
                         <div className="progress-indicator">
                             {t.step} {currentStep} / {totalNodes}
                         </div>
+
+                        {hasBrand && (
+                            <div className={`brand-header ${brandPosClass}`}>
+                                {brand.logo && (
+                                    brand.website ? (
+                                        <a href={brand.website} target="_blank" rel="noopener noreferrer">
+                                            <img src={brand.logo} alt={brand.name || 'Logo'} className="brand-logo" />
+                                        </a>
+                                    ) : (
+                                        <img src={brand.logo} alt={brand.name || 'Logo'} className="brand-logo" />
+                                    )
+                                )}
+                                {brand.name && (
+                                    <span className="brand-name">
+                                        {brand.website ? (
+                                            <a href={brand.website} target="_blank" rel="noopener noreferrer">{brand.name}</a>
+                                        ) : brand.name}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                         
                         <div className="slide-content">
                             {isTerminal && (

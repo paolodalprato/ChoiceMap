@@ -1,4 +1,5 @@
 {
     "scenario": "scenario-sample.json",
+    "theme": "theme.json",
     "showCredits": true
 }

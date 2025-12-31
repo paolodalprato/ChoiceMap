@@ -1,0 +1,54 @@
+{
+    "fontOptions": {
+        "system": { "name": "System Default", "family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif", "google": false },
+        "inter": { "name": "Inter", "family": "'Inter', sans-serif", "google": true },
+        "roboto": { "name": "Roboto", "family": "'Roboto', sans-serif", "google": true },
+        "open-sans": { "name": "Open Sans", "family": "'Open Sans', sans-serif", "google": true },
+        "lato": { "name": "Lato", "family": "'Lato', sans-serif", "google": true },
+        "montserrat": { "name": "Montserrat", "family": "'Montserrat', sans-serif", "google": true },
+        "poppins": { "name": "Poppins", "family": "'Poppins', sans-serif", "google": true },
+        "source-sans": { "name": "Source Sans 3", "family": "'Source Sans 3', sans-serif", "google": true },
+        "nunito": { "name": "Nunito", "family": "'Nunito', sans-serif", "google": true }
+    },
+    "defaultTheme": {
+        "brand": {
+            "name": "",
+            "logo": "",
+            "website": "",
+            "position": { "vertical": "top", "horizontal": "right" }
+        },
+        "typography": { "fontFamily": "system" },
+        "colors": {
+            "background": "#ffffff",
+            "text": "#1f2937",
+            "textSecondary": "#4b5563",
+            "textMuted": "#6b7280",
+            "accent": "#6366f1",
+            "accentHover": "#4f46e5",
+            "success": "#10b981",
+            "warning": "#f59e0b",
+            "border": "#e5e7eb"
+        },
+        "buttons": {
+            "choiceBackground": "#6366f1",
+            "choiceText": "#ffffff",
+            "visitedBackground": "#10b981",
+            "visitedText": "#ffffff",
+            "exploredBackground": "#4b5563",
+            "exploredText": "#ffffff",
+            "restartBackground": "#f59e0b",
+            "restartText": "#ffffff"
+        },
+        "map": {
+            "nodeVisited": "#3730a3",
+            "nodeVisitedText": "#ffffff",
+            "nodeCurrent": "#6366f1",
+            "nodeCurrentText": "#ffffff",
+            "nodeUnvisited": "#f3f4f6",
+            "nodeUnvisitedText": "#6b7280",
+            "nodeUnvisitedBorder": "#9ca3af",
+            "lineVisited": "#6366f1",
+            "lineUnvisited": "#d1d5db"
+        }
+    }
+}
