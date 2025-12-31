@@ -629,9 +629,10 @@
             const [translations, setTranslations] = useState({});
             const [scenarioFileName, setScenarioFileName] = useState('');
             
-            // Load config, then scenario
+            // Load config, then scenario (cache busting to ensure fresh data)
             useEffect(() => {
-                fetch('config.json')
+                const cacheBuster = '?v=' + Date.now();
+                fetch('config.json' + cacheBuster)
                     .then(response => {
                         if (!response.ok) throw new Error('Failed to load config.json');
                         return response.json();
@@ -640,7 +641,7 @@
                         setConfig(configData);
                         setScenarioFileName(configData.scenario);
 
-                        return fetch(configData.scenario);
+                        return fetch(configData.scenario + cacheBuster);
                     })
                     .then(response => {
                         if (!response.ok) throw new Error('Failed to load scenario');
@@ -683,7 +684,11 @@
                 if (visitedNodes.has(nodeId)) {
                     const pathIndex = path.indexOf(nodeId);
                     if (pathIndex !== -1) {
+                        // Node is in current path: truncate to that point
                         setPath(path.slice(0, pathIndex + 1));
+                    } else {
+                        // Node not in path (jumped via map): reset path
+                        setPath([nodeId]);
                     }
                     setCurrentNode(nodeId);
                     setShowMap(false);

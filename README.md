@@ -15,7 +15,7 @@ An interactive branching narrative framework for creating decision-tree based ex
 - **Visual Scenario Editor**: Dedicated tool for creating and managing scenarios
 - **Resource Attachments**: Add downloads, links, and videos to any node
 - **Progress Tracking**: Visual indicators for visited paths and current step
-- **Backtracking**: Users can navigate back through their journey
+- **Backtracking**: Users can navigate back through their journey (via buttons; map jumps reset the path)
 - **No Build Process**: Single HTML files, works directly in browsers
 - **Fully Responsive**: Works on desktop and mobile devices
 
