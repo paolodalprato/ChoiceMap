@@ -1,0 +1,46 @@
+{
+    "brand": {
+        "name": "AI-KNOW.PRP",
+        "logo": "https://www.ai-know.pro/wp-content/uploads/2025/12/Logo_AI-KNOW_400.png",
+        "website": "https://www.ai-know.pro/",
+        "position": {
+            "vertical": "top",
+            "horizontal": "right"
+        }
+    },
+    "typography": {
+        "fontFamily": "montserrat"
+    },
+    "colors": {
+        "background": "#121212",
+        "text": "#ffffff",
+        "textSecondary": "#ffffff",
+        "textMuted": "#c9cbcf",
+        "accent": "#6366f1",
+        "accentHover": "#4f46e5",
+        "success": "#10b981",
+        "warning": "#f59e0b",
+        "border": "#e5e7eb"
+    },
+    "buttons": {
+        "choiceBackground": "#6366f1",
+        "choiceText": "#ffffff",
+        "visitedBackground": "#10b981",
+        "visitedText": "#ffffff",
+        "exploredBackground": "#bbd0ec",
+        "exploredText": "#000000",
+        "restartBackground": "#f5510a",
+        "restartText": "#ffffff"
+    },
+    "map": {
+        "nodeVisited": "#3730a3",
+        "nodeVisitedText": "#ffffff",
+        "nodeCurrent": "#6366f1",
+        "nodeCurrentText": "#ffffff",
+        "nodeUnvisited": "#f3f4f6",
+        "nodeUnvisitedText": "#6b7280",
+        "nodeUnvisitedBorder": "#9ca3af",
+        "lineVisited": "#6366f1",
+        "lineUnvisited": "#d1d5db"
+    }
+}
