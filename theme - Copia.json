@@ -1,11 +1,11 @@
 {
     "brand": {
-        "name": "MySelf",
-        "logo": "https://www.ai-know.pro/wp-content/uploads/2025/12/Logo_AI-KNOW_400-300x300.png",
-        "website": "https://ai-know-pro",
+        "name": "",
+        "logo": "",
+        "website": "",
         "position": {
             "vertical": "top",
-            "horizontal": "left"
+            "horizontal": "right"
         }
     },
     "typography": {

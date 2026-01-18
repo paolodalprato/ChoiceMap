@@ -140,15 +140,41 @@
             box-shadow: 0 4px 15px color-mix(in srgb, var(--explored-bg) 30%, transparent);
         }
         
-        .progress-indicator {
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            z-index: 100;
+        /* Header bar - scrolls with content */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1rem;
+            width: 100%;
         }
 
+        /* Scenario title - left side of header with ellipsis truncation */
+        .scenario-title {
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 500;
+            max-width: 50%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Brand header - right side of header */
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Progress indicator - at bottom, aligned left */
+        .progress-indicator {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            padding: 1rem;
+        }
+
+        /* Map button - fixed bottom right */
         .map-button {
             position: fixed;
             bottom: 1rem;
@@ -342,24 +368,6 @@
         .tree-node.current {
             filter: brightness(1.1);
         }
-        
-        .credits {
-            position: fixed;
-            bottom: 0.5rem;
-            left: 0.5rem;
-            color: var(--text-muted);
-            font-size: 0.65rem;
-            z-index: 10;
-        }
-
-        .credits a {
-            color: var(--text-muted);
-            text-decoration: none;
-        }
-
-        .credits a:hover {
-            color: var(--accent);
-        }
 
         .loading {
             display: flex;
@@ -380,27 +388,6 @@
             flex-direction: column;
             gap: 1rem;
         }
-
-        .brand-header {
-            position: fixed;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            z-index: 100;
-            padding: 0.5rem;
-        }
-
-        /* Vertical positioning */
-        .brand-header.pos-top { top: 0.75rem; }
-        .brand-header.pos-bottom { bottom: 0.75rem; }
-
-        /* Horizontal positioning */
-        .brand-header.pos-left { left: 1rem; }
-        .brand-header.pos-center { left: 50%; transform: translateX(-50%); }
-        .brand-header.pos-right { right: 1rem; }
-
-        /* Adjust center position when at bottom to not overlap credits */
-        .brand-header.pos-bottom.pos-left { left: 6rem; }
 
         .brand-logo {
             height: 32px;
@@ -741,7 +728,7 @@
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
             const [translations, setTranslations] = useState({});
-            const [scenarioFileName, setScenarioFileName] = useState('');
+            const [scenarioTitle, setScenarioTitle] = useState('');
 
             // Load defaults, then config, then theme, then scenario
             useEffect(() => {
@@ -769,7 +756,6 @@
                     .then(data => {
                         configData = data;
                         setConfig(data);
-                        setScenarioFileName(data.scenario);
 
                         // Load theme file (from config.theme or default "theme.json")
                         const themeFile = data.theme || 'theme.json';
@@ -794,6 +780,11 @@
                         setCurrentNode(data.startNode);
                         setVisitedNodes(new Set([data.startNode]));
                         setPath([data.startNode]);
+
+                        // Load scenario title from meta
+                        if (data.meta && data.meta.title) {
+                            setScenarioTitle(getText(data.meta.title));
+                        }
 
                         // Load translations from scenario
                         if (data.translations) {
@@ -857,11 +848,8 @@
             };
             
             const canGoBack = path.length > 1;
-            const showCredits = config?.showCredits !== false;
             const brand = theme?.brand || {};
             const hasBrand = brand.name || brand.logo;
-            const brandPosition = brand.position || { vertical: 'top', horizontal: 'right' };
-            const brandPosClass = `pos-${brandPosition.vertical} pos-${brandPosition.horizontal}`;
 
             if (loading) {
                 return <div className="loading">Loading...</div>;
@@ -902,30 +890,35 @@
                             </button>
                         )}
 
-                        <div className="progress-indicator">
-                            {t.step} {currentStep} / {totalNodes}
-                        </div>
-
-                        {hasBrand && (
-                            <div className={`brand-header ${brandPosClass}`}>
-                                {brand.logo && (
-                                    brand.website ? (
-                                        <a href={brand.website} target="_blank" rel="noopener noreferrer">
+                        {/* Header bar with title and brand - scrolls with content */}
+                        <div className="header-bar">
+                            {scenarioTitle ? (
+                                <div className="scenario-title" title={scenarioTitle}>
+                                    {scenarioTitle}
+                                </div>
+                            ) : <div />}
+                            
+                            {hasBrand ? (
+                                <div className="brand-header">
+                                    {brand.logo && (
+                                        brand.website ? (
+                                            <a href={brand.website} target="_blank" rel="noopener noreferrer">
+                                                <img src={brand.logo} alt={brand.name || 'Logo'} className="brand-logo" />
+                                            </a>
+                                        ) : (
                                             <img src={brand.logo} alt={brand.name || 'Logo'} className="brand-logo" />
-                                        </a>
-                                    ) : (
-                                        <img src={brand.logo} alt={brand.name || 'Logo'} className="brand-logo" />
-                                    )
-                                )}
-                                {brand.name && (
-                                    <span className="brand-name">
-                                        {brand.website ? (
-                                            <a href={brand.website} target="_blank" rel="noopener noreferrer">{brand.name}</a>
-                                        ) : brand.name}
-                                    </span>
-                                )}
-                            </div>
-                        )}
+                                        )
+                                    )}
+                                    {brand.name && (
+                                        <span className="brand-name">
+                                            {brand.website ? (
+                                                <a href={brand.website} target="_blank" rel="noopener noreferrer">{brand.name}</a>
+                                            ) : brand.name}
+                                        </span>
+                                    )}
+                                </div>
+                            ) : <div />}
+                        </div>
                         
                         <div className="slide-content">
                             {isTerminal && (
@@ -984,7 +977,13 @@
                                 </div>
                             )}
                         </div>
+
+                        {/* Progress indicator - at bottom, aligned left */}
+                        <div className="progress-indicator">
+                            {t.step} {currentStep} / {totalNodes}
+                        </div>
                         
+                        {/* Map button - fixed bottom right */}
                         <button className="map-button" onClick={() => setShowMap(true)}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
@@ -998,7 +997,7 @@
                     {showMap && (
                         <div className="map-overlay">
                             <div className="map-header">
-                                <h2>{t.mapOf} {scenarioFileName}</h2>
+                                <h2>{t.mapOf} {scenarioTitle || 'Scenario'}</h2>
                                 <button className="close-button" onClick={() => setShowMap(false)}>X</button>
                             </div>
                             <div className="map-content">
@@ -1010,12 +1009,6 @@
                                     onNodeClick={handleNodeClick}
                                 />
                             </div>
-                        </div>
-                    )}
-                    
-                    {showCredits && (
-                        <div className="credits">
-                            Created by <a href="https://ai-know.pro" target="_blank" rel="noopener noreferrer">Paolo Dalprato</a>
                         </div>
                     )}
                 </>
