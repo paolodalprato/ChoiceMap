@@ -8,25 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="shared-styles.css">
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #ffffff; color: #1f2937; min-height: 100vh; }
-        .editor-container { display: flex; height: 100vh; }
-        .sidebar { width: 280px; background: #f9fafb; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { padding: 1rem; border-bottom: 1px solid #e5e7eb; }
-        .sidebar-header h1 { font-size: 1.25rem; margin: 0 0 0.5rem 0; color: #111827; }
-        .sidebar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-        .btn { padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; border: none; transition: all 0.2s; }
-        .btn-primary { background: #6366f1; color: white; }
-        .btn-primary:hover { background: #5558e3; }
-        .btn-secondary { background: #e5e7eb; color: #374151; }
-        .btn-secondary:hover { background: #d1d5db; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-success:hover { background: #059669; }
-        .btn-danger { background: #ef4444; color: white; text-transform: uppercase; font-weight: 600; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-close { background: #ef4444; color: white; text-transform: uppercase; font-weight: 600; }
-        .btn-close:hover { background: #dc2626; }
+        /* Scenario Editor specific styles */
+        .sidebar { width: 280px; }
         .node-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
         .node-item { padding: 0.75rem; margin-bottom: 0.5rem; background: #ffffff; border-radius: 8px; cursor: pointer; border: 2px solid #e5e7eb; transition: all 0.2s; }
         .node-item:hover { border-color: #9ca3af; }
@@ -45,32 +30,17 @@
         .editor-content { flex: 1; overflow-y: auto; padding: 1.5rem; background: #ffffff; }
         .form-section { background: #f9fafb; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; border: 1px solid #e5e7eb; }
         .form-section h3 { margin: 0 0 1rem 0; font-size: 1rem; color: #111827; display: flex; align-items: center; gap: 0.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group:last-child { margin-bottom: 0; }
-        .form-label { display: block; font-size: 0.8rem; color: #6b7280; margin-bottom: 0.4rem; }
-        .form-input { width: 100%; padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #1f2937; font-size: 0.9rem; }
-        .form-input:focus { outline: none; border-color: #6366f1; }
-        .form-textarea { min-height: 120px; resize: vertical; font-family: monospace; }
+        .form-section .form-group { margin-bottom: 1rem; }
+        .form-section .form-label { font-size: 0.8rem; margin-bottom: 0.4rem; }
+        .form-section .form-input { padding: 0.6rem 0.75rem; font-size: 0.9rem; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-row.single { grid-template-columns: 1fr; }
-        .choice-item, .resource-item { background: #ffffff; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; border: 1px solid #e5e7eb; }
+        .choice-item, .resource-item { background: #ffffff; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #e5e7eb; transition: border-color 0.2s, box-shadow 0.2s; }
         .choice-header, .resource-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
         .choice-number { font-size: 0.8rem; color: #6366f1; font-weight: 600; }
-        .form-select { padding: 0.6rem 0.75rem; border-radius: 6px; border: 1px solid #d1d5db; background: #ffffff; color: #1f2937; font-size: 0.9rem; width: 100%; }
-        .form-select:focus { outline: none; border-color: #6366f1; }
-                .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
-        .modal-content { background: #ffffff; border-radius: 12px; padding: 1.5rem; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; border: 1px solid #e5e7eb; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
-        .modal-header h2, .modal-header h3 { margin: 0; color: #111827; }
+        .form-section .form-select { padding: 0.6rem 0.75rem; font-size: 0.9rem; }
         .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
         .empty-state h2 { color: #374151; margin-bottom: 0.5rem; }
-        .status-bar { padding: 0.5rem 1rem; background: #f9fafb; border-top: 1px solid #e5e7eb; font-size: 0.75rem; color: #6b7280; display: flex; justify-content: space-between; }
-        .status-saved { color: #10b981; }
-        .status-unsaved { color: #f59e0b; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f3f4f6; }
-        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-        .hidden-input { display: none; }
         .map-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 200; display: flex; flex-direction: column; }
         .map-overlay-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; }
         .map-overlay-header h2 { margin: 0; color: #111827; font-size: 1.25rem; }
@@ -82,14 +52,6 @@
         .legend-selected { border-color: #818cf8; background: #3730a3; }
         .legend-orphan { border-color: #ef4444; background: #7f1d1d; }
         .map-overlay-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-        .welcome-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem; }
-        .welcome-screen h2 { color: #111827; font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .welcome-screen p { color: #6b7280; margin-bottom: 2rem; max-width: 400px; }
-        .welcome-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
-        .welcome-actions .btn { padding: 0.75rem 1.5rem; font-size: 1rem; }
-        .credits { position: fixed; bottom: 0.5rem; left: 0.5rem; color: #9ca3af; font-size: 0.65rem; z-index: 10; }
-        .credits a { color: #9ca3af; text-decoration: none; }
-        .credits a:hover { color: #6366f1; }
     </style>
 </head>
 <body>
@@ -99,8 +61,15 @@
         const { useState, useEffect, useRef } = React;
 
         // ============================================================
-        // DEFAULT DATA
+        // DEFAULT DATA (loaded from defaults.json)
         // ============================================================
+        let layoutConfig = {
+            levelHeight: 120,
+            nodeWidth: 140,
+            nodeHeight: 44,
+            padding: 60
+        };
+
         const defaultTranslations = {
             step: 'Step',
             restart: 'Start Over',
@@ -147,10 +116,10 @@
         // TREE MAP OVERLAY COMPONENT
         // ============================================================
         const TreeMapOverlay = ({ nodes, startNode, selectedNode, onSelectNode, onClose, fileName }) => {
+            const [selectedConnection, setSelectedConnection] = useState(null);
             const levels = calculateNodeLevels(nodes, startNode);
             const maxLevel = Math.max(...Object.keys(levels).map(Number), 1);
-            // Tree layout constants (px): vertical spacing, horizontal spacing, node box height, SVG padding
-            const levelHeight = 120, nodeWidth = 140, nodeHeight = 44, padding = 60;
+            const { levelHeight, nodeWidth, nodeHeight, padding } = layoutConfig;
             const positions = {};
             let maxWidth = 0;
             Object.entries(levels).forEach(([level, nodeIds]) => { maxWidth = Math.max(maxWidth, nodeIds.length * nodeWidth); });
@@ -159,14 +128,98 @@
                 const startX = (maxWidth - totalWidth) / 2 + nodeWidth / 2;
                 nodeIds.forEach((nodeId, index) => { positions[nodeId] = { x: startX + index * nodeWidth + padding, y: parseInt(level) * levelHeight + padding }; });
             });
+            
+            // Build connections with metadata
             const connections = [];
             Object.entries(nodes).forEach(([nodeId, node]) => {
                 if (node.choices && positions[nodeId]) {
-                    node.choices.forEach(choice => { if (choice.next && positions[choice.next]) connections.push({ from: positions[nodeId], to: positions[choice.next] }); });
+                    node.choices.forEach((choice, idx) => { 
+                        if (choice.next && positions[choice.next]) {
+                            const fromPos = positions[nodeId];
+                            const toPos = positions[choice.next];
+                            const fromLevel = getNodeLevel(nodeId, nodes, startNode).level;
+                            const toLevel = getNodeLevel(choice.next, nodes, startNode).level;
+                            connections.push({ 
+                                from: fromPos, 
+                                to: toPos, 
+                                fromId: nodeId, 
+                                toId: choice.next,
+                                fromLevel,
+                                toLevel,
+                                key: `${nodeId}-${choice.next}-${idx}`
+                            }); 
+                        }
+                    });
                 }
             });
+            
             const isTerminal = (nodeId) => !nodes[nodeId]?.choices || nodes[nodeId].choices.length === 0;
             const isOrphan = (nodeId) => getNodeLevel(nodeId, nodes, startNode).level === 0;
+            
+            // Generate path for connection (straight line, arc for loops/same level)
+            const getConnectionPath = (conn) => {
+                const x1 = conn.from.x;
+                const y1 = conn.from.y + nodeHeight / 2;
+                const x2 = conn.to.x;
+                const y2 = conn.to.y - nodeHeight / 2;
+
+                // Forward connection (to lower level) - straight line
+                if (conn.toLevel > conn.fromLevel) {
+                    return { path: `M ${x1} ${y1} L ${x2} ${y2}`, type: 'line', x1, y1, x2, y2 };
+                }
+
+                // Same level or backward (loop) - curved arc
+                const isBackward = conn.toLevel < conn.fromLevel;
+
+                // Calculate control point for quadratic bezier
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+
+                // Offset for the curve - more pronounced for backward connections
+                let curveOffset;
+                if (isBackward) {
+                    const levelDiff = conn.fromLevel - conn.toLevel;
+                    curveOffset = Math.max(80, levelDiff * 40 + 60);
+                } else {
+                    curveOffset = 50;
+                }
+
+                // Determine curve direction based on relative positions
+                const curveDirection = x1 <= x2 ? 1 : -1;
+                const controlX = midX + (curveOffset * curveDirection * (isBackward ? 1.5 : 1));
+                const controlY = isBackward ? Math.min(y1, y2) - 30 : midY;
+
+                return { path: `M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`, type: 'bezier', x1, y1, x2, y2, cx: controlX, cy: controlY };
+            };
+
+            // Calculate midpoint and angle for arrow placement
+            const getArrowPosition = (pathData) => {
+                if (pathData.type === 'line') {
+                    // Midpoint of straight line
+                    const mx = (pathData.x1 + pathData.x2) / 2;
+                    const my = (pathData.y1 + pathData.y2) / 2;
+                    const angle = Math.atan2(pathData.y2 - pathData.y1, pathData.x2 - pathData.x1) * 180 / Math.PI;
+                    return { x: mx, y: my, angle };
+                } else {
+                    // Midpoint of quadratic bezier at t=0.5
+                    const t = 0.5;
+                    const mx = (1-t)*(1-t)*pathData.x1 + 2*(1-t)*t*pathData.cx + t*t*pathData.x2;
+                    const my = (1-t)*(1-t)*pathData.y1 + 2*(1-t)*t*pathData.cy + t*t*pathData.y2;
+                    // Tangent at t=0.5: derivative of bezier
+                    const tx = 2*(1-t)*(pathData.cx - pathData.x1) + 2*t*(pathData.x2 - pathData.cx);
+                    const ty = 2*(1-t)*(pathData.cy - pathData.y1) + 2*t*(pathData.y2 - pathData.cy);
+                    const angle = Math.atan2(ty, tx) * 180 / Math.PI;
+                    return { x: mx, y: my, angle };
+                }
+            };
+            
+            // Get connection color based on type
+            const getConnectionColor = (conn, isSelected, isHovered) => {
+                if (isSelected || isHovered) return '#6366f1';
+                if (conn.toLevel < conn.fromLevel) return '#f59e0b'; // backward/loop - amber
+                if (conn.toLevel === conn.fromLevel) return '#8b5cf6'; // same level - purple
+                return '#d1d5db'; // forward - gray
+            };
             
             return (
                 <div className="map-overlay">
@@ -181,8 +234,61 @@
                         <button className="btn btn-close" onClick={onClose}>X</button>
                     </div>
                     <div className="map-overlay-content">
-                        <svg width={Math.max(maxWidth + padding * 2, 400)} height={Math.max((maxLevel + 1) * levelHeight + padding, 300)} style={{ display: 'block', margin: 'auto' }}>
-                            {connections.map((conn, i) => <line key={i} x1={conn.from.x} y1={conn.from.y + nodeHeight/2} x2={conn.to.x} y2={conn.to.y - nodeHeight/2} stroke="#d1d5db" strokeWidth={2} />)}
+                        <svg width={Math.max(maxWidth + padding * 2 + 100, 400)} height={Math.max((maxLevel + 1) * levelHeight + padding, 300)} style={{ display: 'block', margin: 'auto' }}>
+                            {/* Connections with midpoint arrows */}
+                            {connections.map((conn) => {
+                                const isSelected = selectedConnection === conn.key;
+                                const pathData = getConnectionPath(conn);
+                                const arrowPos = getArrowPosition(pathData);
+                                const color = getConnectionColor(conn, isSelected, false);
+
+                                return (
+                                    <g key={conn.key}>
+                                        {/* Invisible wider path for easier clicking */}
+                                        <path
+                                            d={pathData.path}
+                                            fill="none"
+                                            stroke="transparent"
+                                            strokeWidth={15}
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => setSelectedConnection(isSelected ? null : conn.key)}
+                                        />
+                                        {/* Visible path */}
+                                        <path
+                                            d={pathData.path}
+                                            fill="none"
+                                            stroke={color}
+                                            strokeWidth={isSelected ? 3 : 2}
+                                            style={{ cursor: 'pointer', transition: 'stroke 0.2s, stroke-width 0.2s' }}
+                                            onClick={() => setSelectedConnection(isSelected ? null : conn.key)}
+                                            onMouseEnter={(e) => {
+                                                if (!isSelected) {
+                                                    e.target.setAttribute('stroke', '#6366f1');
+                                                    e.target.setAttribute('stroke-width', '3');
+                                                    e.target.nextSibling?.setAttribute('fill', '#6366f1');
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!isSelected) {
+                                                    e.target.setAttribute('stroke', getConnectionColor(conn, false, false));
+                                                    e.target.setAttribute('stroke-width', '2');
+                                                    e.target.nextSibling?.setAttribute('fill', getConnectionColor(conn, false, false));
+                                                }
+                                            }}
+                                        />
+                                        {/* Arrow at midpoint */}
+                                        <polygon
+                                            points="-10,-6 10,0 -10,6"
+                                            fill={color}
+                                            transform={`translate(${arrowPos.x}, ${arrowPos.y}) rotate(${arrowPos.angle})`}
+                                            style={{ cursor: 'pointer', transition: 'fill 0.2s' }}
+                                            onClick={() => setSelectedConnection(isSelected ? null : conn.key)}
+                                        />
+                                    </g>
+                                );
+                            })}
+                            
+                            {/* Nodes */}
                             {Object.entries(positions).map(([nodeId, pos]) => {
                                 const isSelected = nodeId === selectedNode, isStart = nodeId === startNode, isEnd = isTerminal(nodeId), orphan = isOrphan(nodeId);
                                 let fill = '#f3f4f6', stroke = '#9ca3af', sw = 2, textFill = '#374151';
@@ -283,45 +389,144 @@
         // ============================================================
         const ChoiceEditor = ({ choice, index, nodeIds, parentNodeId, onChange, onRemove, onCreateNode }) => {
             const [showCreate, setShowCreate] = useState(false);
-            const [showError, setShowError] = useState(false);
-            const handleTarget = (e) => {
-                if (e.target.value === '__CREATE__') {
-                    if (!choice.text || !choice.text.trim()) {
-                        setShowError(true);
-                        return;
-                    }
-                    setShowCreate(true);
-                } else {
-                    onChange({ ...choice, next: e.target.value });
+            const [localText, setLocalText] = useState(choice.text || '');
+            const [localTarget, setLocalTarget] = useState(choice.next || '');
+            const [errors, setErrors] = useState({ text: null, target: null });
+            const [pendingTarget, setPendingTarget] = useState(null);
+
+            // Check if local values differ from saved values
+            const hasUnsavedChanges = localText !== (choice.text || '') || localTarget !== (choice.next || '');
+            const isComplete = (choice.text || '').trim() && (choice.next || '');
+
+            // Sync local state when choice prop changes (e.g., after node creation)
+            useEffect(() => {
+                setLocalText(choice.text || '');
+                setLocalTarget(choice.next || '');
+            }, [choice.text, choice.next]);
+
+            const handleTextChange = (e) => {
+                setLocalText(e.target.value);
+                if (e.target.value.trim()) {
+                    setErrors(prev => ({ ...prev, text: null }));
                 }
             };
+
+            const handleTargetChange = (e) => {
+                const newTarget = e.target.value;
+
+                if (newTarget === '__CREATE__') {
+                    // Store that we want to create a node, but need to save first
+                    if (!localText.trim()) {
+                        setErrors({ text: 'Button text required', target: null });
+                        return;
+                    }
+                    setPendingTarget('__CREATE__');
+                    setShowCreate(true);
+                } else {
+                    setLocalTarget(newTarget);
+                    setPendingTarget(null);
+                    if (newTarget) {
+                        setErrors(prev => ({ ...prev, target: null }));
+                    }
+                }
+            };
+
             const handleNodeCreated = (newNodeId) => {
-                onChange({ ...choice, next: newNodeId });
+                setLocalTarget(newNodeId);
+                setPendingTarget(null);
                 setShowCreate(false);
+                // Auto-save after creating node since both fields are now complete
+                if (localText.trim()) {
+                    onChange({ ...choice, text: localText.trim(), next: newNodeId });
+                    setErrors({ text: null, target: null });
+                }
             };
-            const handleTextChange = (e) => {
-                onChange({ ...choice, text: e.target.value });
-                if (e.target.value.trim()) setShowError(false);
+
+            const handleSave = () => {
+                const newErrors = { text: null, target: null };
+                let hasError = false;
+
+                if (!localText.trim()) {
+                    newErrors.text = 'Button text is required';
+                    hasError = true;
+                }
+
+                if (!localTarget) {
+                    newErrors.target = 'Target node is required';
+                    hasError = true;
+                }
+
+                setErrors(newErrors);
+
+                if (!hasError) {
+                    onChange({ ...choice, text: localText.trim(), next: localTarget });
+                }
             };
+
+            // Determine border style based on state
+            const getBorderStyle = () => {
+                if (errors.text || errors.target) return { borderColor: '#ef4444' };
+                if (hasUnsavedChanges) return { borderColor: '#f59e0b', boxShadow: '0 0 0 2px rgba(245, 158, 11, 0.2)' };
+                if (isComplete) return { borderColor: '#10b981' };
+                return {};
+            };
+
             return (
-                <div className="choice-item">
+                <div className="choice-item" style={getBorderStyle()}>
                     <div className="choice-header">
-                        <span className="choice-number">Choice {index + 1}</span>
+                        <span className="choice-number">
+                            Choice {index + 1}
+                            {hasUnsavedChanges && <span style={{ color: '#f59e0b', marginLeft: '0.5rem', fontSize: '0.7rem' }}>● unsaved</span>}
+                            {isComplete && !hasUnsavedChanges && <span style={{ color: '#10b981', marginLeft: '0.5rem', fontSize: '0.7rem' }}>✓</span>}
+                        </span>
                         <button className="btn btn-danger" onClick={onRemove} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>REMOVE</button>
                     </div>
                     <div className="form-group">
-                        <label className="form-label">Button Text {showError && <span style={{ color: '#ef4444', fontSize: '0.75rem' }}>(required before creating node)</span>}</label>
-                        <input type="text" className="form-input" value={choice.text || ''} onChange={handleTextChange} style={showError ? { borderColor: '#ef4444' } : {}} placeholder="Enter button text first" />
+                        <label className="form-label">
+                            Button Text <span style={{ color: '#ef4444' }}>*</span>
+                        </label>
+                        <input
+                            type="text"
+                            className="form-input"
+                            value={localText}
+                            onChange={handleTextChange}
+                            style={errors.text ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
+                            placeholder="Enter button text"
+                        />
+                        {errors.text && (
+                            <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <span>⚠️</span> {errors.text}
+                            </div>
+                        )}
                     </div>
                     <div className="form-group">
-                        <label className="form-label">Target Node</label>
-                        <select className="form-select" value={choice.next || ''} onChange={handleTarget}>
-                            <option value="">-- Select --</option>
+                        <label className="form-label">
+                            Target Node <span style={{ color: '#ef4444' }}>*</span>
+                        </label>
+                        <select
+                            className="form-select"
+                            value={localTarget}
+                            onChange={handleTargetChange}
+                            style={errors.target ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
+                        >
+                            <option value="">-- Select target --</option>
                             <option value="__CREATE__" style={{ fontWeight: 'bold', color: '#10b981' }}>+ Create new node...</option>
                             {nodeIds.map(id => <option key={id} value={id}>{id}</option>)}
                         </select>
+                        {errors.target && (
+                            <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <span>⚠️</span> {errors.target}
+                            </div>
+                        )}
                     </div>
-                    {showCreate && <CreateNodePopup parentNodeId={parentNodeId} existingNodeIds={nodeIds} onCreateNode={onCreateNode} onCreated={handleNodeCreated} onClose={() => setShowCreate(false)} />}
+                    {hasUnsavedChanges && (
+                        <div style={{ marginTop: '0.75rem' }}>
+                            <button className="btn btn-success" onClick={handleSave} style={{ width: '100%' }}>
+                                Save Choice
+                            </button>
+                        </div>
+                    )}
+                    {showCreate && <CreateNodePopup parentNodeId={parentNodeId} existingNodeIds={nodeIds} onCreateNode={onCreateNode} onCreated={handleNodeCreated} onClose={() => { setShowCreate(false); setPendingTarget(null); }} />}
                 </div>
             );
         };
@@ -460,32 +665,33 @@
         };
         
         // ============================================================
-        // WELCOME SCREEN COMPONENT
-        // ============================================================
-        const WelcomeScreen = ({ onNew, onOpen }) => (
-            <div className="welcome-screen">
-                <h2>Scenario Editor</h2>
-                <p>Create branching narrative scenarios for training, education, or interactive storytelling.</p>
-                <div className="welcome-actions">
-                    <button className="btn btn-success" onClick={onNew}>+ New Scenario</button>
-                    <button className="btn btn-primary" onClick={onOpen}>📂 Open File</button>
-                </div>
-            </div>
-        );
-        
-        // ============================================================
         // MAIN SCENARIO EDITOR COMPONENT
         // ============================================================
         const ScenarioEditor = () => {
-            const [scenario, setScenario] = useState(null);
-            const [selectedNode, setSelectedNode] = useState(null);
+            // Initialize with empty scenario directly (no welcome screen)
+            const [scenario, setScenario] = useState(() => createEmptyScenario());
+            const [selectedNode, setSelectedNode] = useState('start');
             const [hasChanges, setHasChanges] = useState(false);
             const [showMetaEditor, setShowMetaEditor] = useState(false);
             const [showMap, setShowMap] = useState(false);
             const [fileName, setFileName] = useState(null);
+            const [layoutLoaded, setLayoutLoaded] = useState(false);
             const fileInputRef = useRef(null);
+
+            // Load layout configuration from defaults.json
+            useEffect(() => {
+                fetch('defaults.json?v=' + Date.now())
+                    .then(res => res.ok ? res.json() : null)
+                    .then(data => {
+                        if (data?.layout) {
+                            layoutConfig = { ...layoutConfig, ...data.layout };
+                        }
+                        setLayoutLoaded(true);
+                    })
+                    .catch(() => setLayoutLoaded(true));
+            }, []);
             
-            const nodeIds = scenario ? Object.keys(scenario.nodes) : [];
+            const nodeIds = Object.keys(scenario.nodes);
             
             const handleLoad = (e) => {
                 const file = e.target.files[0];
@@ -506,7 +712,6 @@
             };
             
             const handleSave = () => {
-                if (!scenario) return;
                 const saveName = fileName || 'scenario.json';
                 const json = JSON.stringify(scenario, null, 4);
                 const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
@@ -551,27 +756,13 @@
             
             const triggerFileOpen = () => fileInputRef.current?.click();
             
-            // Welcome screen when no scenario loaded
-            if (!scenario) {
-                return (
-                    <div className="editor-container">
-                        <input ref={fileInputRef} type="file" accept=".json" className="hidden-input" onChange={handleLoad} />
-                        <div className="main-editor">
-                            <WelcomeScreen onNew={handleNew} onOpen={triggerFileOpen} />
-                        </div>
-                        <div className="credits">
-                            Created by <a href="https://ai-know.pro" target="_blank" rel="noopener noreferrer">Paolo Dalprato</a>
-                        </div>
-                    </div>
-                );
-            }
-            
             return (
                 <div className="editor-container">
                     <div className="sidebar">
                         <div className="sidebar-header">
                             <h1>Scenario Editor</h1>
                             <div className="sidebar-actions">
+                                <button className="btn btn-success" onClick={handleNew}>New</button>
                                 <button className="btn btn-secondary" onClick={triggerFileOpen}>Open</button>
                                 <button className="btn btn-primary" onClick={handleSave}>Save</button>
                                 <button className="btn btn-secondary" onClick={() => setShowMap(true)}>Map</button>

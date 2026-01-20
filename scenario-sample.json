@@ -21,26 +21,51 @@
         "start": {
             "content": "# Welcome to the Journey\n\nThis is an **interactive exploration** where your choices shape the path ahead.\n\nThere are no right or wrong answers, only different perspectives to discover.\n\n> Each choice opens new possibilities. You can always return to explore other paths.\n\n**Choose your starting direction:**",
             "choices": [
-                { "text": "Path of Knowledge", "next": "knowledge" },
-                { "text": "Path of Action", "next": "action" },
-                { "text": "Path of Reflection", "next": "reflection" }
+                {
+                    "text": "Path of Knowledge",
+                    "next": "knowledge"
+                },
+                {
+                    "text": "Path of Action",
+                    "next": "action"
+                },
+                {
+                    "text": "Path of Reflection",
+                    "next": "reflection"
+                }
             ],
             "resources": [
-                { "type": "link", "label": "About this project", "url": "https://ai-know.pro" }
+                {
+                    "type": "link",
+                    "label": "About this project",
+                    "url": "https://ai-know.pro"
+                }
             ]
         },
         "knowledge": {
             "content": "# The Path of Knowledge\n\nYou've chosen to explore through **understanding and learning**.\n\nKnowledge builds upon itself, layer by layer:\n\n- First comes curiosity\n- Then investigation\n- Finally, comprehension\n\n> \"The more you know, the more you realize how much you don't know.\"\n\n**How do you prefer to learn?**",
             "choices": [
-                { "text": "Through theory", "next": "knowledge_theory" },
-                { "text": "Through practice", "next": "knowledge_practice" }
+                {
+                    "text": "Through theory",
+                    "next": "knowledge_theory"
+                },
+                {
+                    "text": "Through practice",
+                    "next": "knowledge_practice"
+                }
             ]
         },
         "action": {
             "content": "# The Path of Action\n\nYou've chosen to move forward through **doing and experimenting**.\n\nAction teaches through direct experience:\n\n- Try something new\n- Observe the results\n- Adjust and try again\n\n> \"The journey of a thousand miles begins with a single step.\"\n\n**What kind of action calls to you?**",
             "choices": [
-                { "text": "Bold initiatives", "next": "action_bold" },
-                { "text": "Careful steps", "next": "action_careful" }
+                {
+                    "text": "Bold initiatives",
+                    "next": "action_bold"
+                },
+                {
+                    "text": "Careful steps",
+                    "next": "action_careful"
+                }
             ]
         },
         "reflection": {
@@ -50,17 +75,34 @@
         "knowledge_theory": {
             "content": "# Theoretical Understanding\n\nYou prefer to build a **mental framework** first.\n\nTheory provides:\n\n- Structure for organizing ideas\n- Principles that guide application\n- A map before the journey\n\nUnderstanding the *why* before the *how* creates deeper learning.\n\n**Which theoretical approach resonates with you?**",
             "choices": [
-                { "text": "Systematic analysis", "next": "theory_systematic" },
-                { "text": "Intuitive synthesis", "next": "theory_intuitive" },
-                { "text": "Critical questioning", "next": "theory_critical" }
+                {
+                    "text": "Systematic analysis",
+                    "next": "theory_systematic"
+                },
+                {
+                    "text": "Intuitive synthesis",
+                    "next": "theory_intuitive"
+                },
+                {
+                    "text": "Critical questioning",
+                    "next": "theory_critical"
+                }
             ]
         },
         "theory_systematic": {
             "content": "# Systematic Analysis\n\nYou approach knowledge through **methodical decomposition**.\n\nBreaking complex ideas into components:\n\n- Identify the parts\n- Understand relationships\n- Rebuild with clarity\n\nThe systematic mind finds order in chaos.\n\n**Your analytical skills sharpen.**",
             "choices": [],
             "resources": [
-                { "type": "download", "label": "Analysis Template", "url": "docs/analysis-template.pdf" },
-                { "type": "link", "label": "Further reading", "url": "https://example.com/systematic-thinking" }
+                {
+                    "type": "download",
+                    "label": "Analysis Template",
+                    "url": "docs/analysis-template.pdf"
+                },
+                {
+                    "type": "link",
+                    "label": "Further reading",
+                    "url": "https://example.com/systematic-thinking"
+                }
             ]
         },
         "theory_intuitive": {

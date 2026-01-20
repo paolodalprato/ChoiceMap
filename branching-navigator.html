@@ -566,21 +566,31 @@
         // Tree Map Component
         // ============================================================
         const TreeMap = ({ scenarioData, nodes, visitedNodes, currentNode, onNodeClick }) => {
+            const [selectedConnection, setSelectedConnection] = useState(null);
+
+            // Tree layout constants (px)
+            const levelHeight = 120;
+            const nodeWidth = 140;
+            const nodeHeight = 40;
+            const padding = 60;
+
             const buildTreeLayout = () => {
                 const nodePositions = {};
                 const nodesByLevel = {};
-                
+                const nodeLevels = {};
+
                 const queue = [{ id: scenarioData.startNode, level: 0 }];
                 const visited = new Set();
-                
+
                 while (queue.length > 0) {
                     const { id, level } = queue.shift();
                     if (visited.has(id)) continue;
                     visited.add(id);
-                    
+
                     if (!nodesByLevel[level]) nodesByLevel[level] = [];
                     nodesByLevel[level].push(id);
-                    
+                    nodeLevels[id] = level;
+
                     const node = nodes[id];
                     if (node && node.choices) {
                         node.choices.forEach(choice => {
@@ -590,24 +600,19 @@
                         });
                     }
                 }
-                
-                // Tree layout constants (px)
-                const levelHeight = 120;  // Vertical spacing between levels
-                const nodeWidth = 140;    // Horizontal spacing between nodes
-                const padding = 60;       // SVG padding
-                
+
                 let maxWidth = 0;
                 Object.keys(nodesByLevel).forEach(level => {
                     const nodesInLevel = nodesByLevel[level];
                     const totalWidth = nodesInLevel.length * nodeWidth;
                     maxWidth = Math.max(maxWidth, totalWidth);
                 });
-                
+
                 Object.keys(nodesByLevel).forEach(level => {
                     const nodesInLevel = nodesByLevel[level];
                     const totalWidth = nodesInLevel.length * nodeWidth;
                     const startX = (maxWidth - totalWidth) / 2 + nodeWidth / 2;
-                    
+
                     nodesInLevel.forEach((nodeId, index) => {
                         nodePositions[nodeId] = {
                             x: startX + index * nodeWidth + padding,
@@ -615,38 +620,45 @@
                         };
                     });
                 });
-                
+
                 const totalLevels = Object.keys(nodesByLevel).length;
-                
+
                 return {
                     positions: nodePositions,
+                    levels: nodeLevels,
                     width: maxWidth + padding * 2,
                     height: totalLevels * levelHeight + padding
                 };
             };
-            
-            const { positions, width, height } = buildTreeLayout();
-            
+
+            const { positions, levels, width, height } = buildTreeLayout();
+
+            // Build connections with level info
             const connections = [];
             Object.keys(nodes).forEach(nodeId => {
                 const node = nodes[nodeId];
                 if (node.choices && positions[nodeId]) {
-                    node.choices.forEach(choice => {
+                    node.choices.forEach((choice, idx) => {
                         if (positions[choice.next]) {
                             connections.push({
                                 from: positions[nodeId],
                                 to: positions[choice.next],
-                                visited: visitedNodes.has(nodeId) && visitedNodes.has(choice.next)
+                                fromId: nodeId,
+                                toId: choice.next,
+                                fromLevel: levels[nodeId] ?? 0,
+                                toLevel: levels[choice.next] ?? 0,
+                                visited: visitedNodes.has(nodeId) && visitedNodes.has(choice.next),
+                                key: `${nodeId}-${choice.next}-${idx}`
                             });
                         }
                     });
                 }
             });
-            
+
             const getNodeLabel = (nodeId) => {
                 const node = nodes[nodeId];
                 if (!node) return nodeId;
-                
+
                 const content = getText(node.content);
                 const match = content.match(/^#\s+(.+)$/m);
                 if (match) {
@@ -655,26 +667,132 @@
                 }
                 return nodeId;
             };
-            
+
+            // Generate path for connection (straight line or curved arc)
+            const getConnectionPath = (conn) => {
+                const x1 = conn.from.x;
+                const y1 = conn.from.y + nodeHeight / 2;
+                const x2 = conn.to.x;
+                const y2 = conn.to.y - nodeHeight / 2;
+
+                // Forward connection (to lower level) - straight line
+                if (conn.toLevel > conn.fromLevel) {
+                    return { path: `M ${x1} ${y1} L ${x2} ${y2}`, type: 'line', x1, y1, x2, y2 };
+                }
+
+                // Same level or backward (loop) - curved arc
+                const isBackward = conn.toLevel < conn.fromLevel;
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+
+                let curveOffset;
+                if (isBackward) {
+                    const levelDiff = conn.fromLevel - conn.toLevel;
+                    curveOffset = Math.max(80, levelDiff * 40 + 60);
+                } else {
+                    curveOffset = 50;
+                }
+
+                const curveDirection = x1 <= x2 ? 1 : -1;
+                const controlX = midX + (curveOffset * curveDirection * (isBackward ? 1.5 : 1));
+                const controlY = isBackward ? Math.min(y1, y2) - 30 : midY;
+
+                return { path: `M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`, type: 'bezier', x1, y1, x2, y2, cx: controlX, cy: controlY };
+            };
+
+            // Calculate midpoint and angle for arrow placement
+            const getArrowPosition = (pathData) => {
+                if (pathData.type === 'line') {
+                    const mx = (pathData.x1 + pathData.x2) / 2;
+                    const my = (pathData.y1 + pathData.y2) / 2;
+                    const angle = Math.atan2(pathData.y2 - pathData.y1, pathData.x2 - pathData.x1) * 180 / Math.PI;
+                    return { x: mx, y: my, angle };
+                } else {
+                    const t = 0.5;
+                    const mx = (1-t)*(1-t)*pathData.x1 + 2*(1-t)*t*pathData.cx + t*t*pathData.x2;
+                    const my = (1-t)*(1-t)*pathData.y1 + 2*(1-t)*t*pathData.cy + t*t*pathData.y2;
+                    const tx = 2*(1-t)*(pathData.cx - pathData.x1) + 2*t*(pathData.x2 - pathData.cx);
+                    const ty = 2*(1-t)*(pathData.cy - pathData.y1) + 2*t*(pathData.y2 - pathData.cy);
+                    const angle = Math.atan2(ty, tx) * 180 / Math.PI;
+                    return { x: mx, y: my, angle };
+                }
+            };
+
+            // Get connection color based on type, visited state, and selection
+            const getConnectionColor = (conn, isSelected) => {
+                // Selected connections are highlighted
+                if (isSelected) return '#6366f1';
+                // Visited connections use theme color
+                if (conn.visited) return 'var(--map-line-visited)';
+                // Unvisited: color by connection type
+                if (conn.toLevel < conn.fromLevel) return '#f59e0b'; // backward/loop - amber
+                if (conn.toLevel === conn.fromLevel) return '#8b5cf6'; // same level - purple
+                return 'var(--map-line-unvisited)'; // forward - theme unvisited
+            };
+
             return (
-                <svg 
-                    width={Math.max(width, 400)} 
+                <svg
+                    width={Math.max(width, 400)}
                     height={Math.max(height, 300)}
                     style={{ display: 'block' }}
                 >
-                    {connections.map((conn, index) => (
-                        <line
-                            key={`conn-${index}`}
-                            x1={conn.from.x}
-                            y1={conn.from.y + 20}
-                            x2={conn.to.x}
-                            y2={conn.to.y - 20}
-                            stroke={conn.visited ? 'var(--map-line-visited)' : 'var(--map-line-unvisited)'}
-                            strokeWidth={conn.visited ? 3 : 2}
-                            strokeDasharray={conn.visited ? 'none' : '5,5'}
-                        />
-                    ))}
+                    {/* Connections with midpoint arrows */}
+                    {connections.map((conn) => {
+                        const isSelected = selectedConnection === conn.key;
+                        const pathData = getConnectionPath(conn);
+                        const arrowPos = getArrowPosition(pathData);
+                        const color = getConnectionColor(conn, isSelected);
+                        const strokeWidth = isSelected ? 4 : (conn.visited ? 3 : 2);
+                        const isForward = conn.toLevel > conn.fromLevel;
 
+                        return (
+                            <g key={conn.key}>
+                                {/* Invisible wider path for easier clicking */}
+                                <path
+                                    d={pathData.path}
+                                    fill="none"
+                                    stroke="transparent"
+                                    strokeWidth={15}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => setSelectedConnection(isSelected ? null : conn.key)}
+                                />
+                                {/* Visible path */}
+                                <path
+                                    d={pathData.path}
+                                    fill="none"
+                                    stroke={color}
+                                    strokeWidth={strokeWidth}
+                                    strokeDasharray={conn.visited || !isForward ? 'none' : '5,5'}
+                                    style={{ cursor: 'pointer', transition: 'stroke 0.2s, stroke-width 0.2s' }}
+                                    onClick={() => setSelectedConnection(isSelected ? null : conn.key)}
+                                    onMouseEnter={(e) => {
+                                        if (!isSelected) {
+                                            e.target.setAttribute('stroke', '#6366f1');
+                                            e.target.setAttribute('stroke-width', '4');
+                                            e.target.nextSibling?.setAttribute('fill', '#6366f1');
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (!isSelected) {
+                                            e.target.setAttribute('stroke', getConnectionColor(conn, false));
+                                            e.target.setAttribute('stroke-width', conn.visited ? '3' : '2');
+                                            e.target.nextSibling?.setAttribute('fill', getConnectionColor(conn, false));
+                                        }
+                                    }}
+                                />
+                                {/* Arrow at midpoint */}
+                                <polygon
+                                    points="-10,-6 10,0 -10,6"
+                                    fill={color}
+                                    transform={`translate(${arrowPos.x}, ${arrowPos.y}) rotate(${arrowPos.angle})`}
+                                    style={{ cursor: 'pointer', transition: 'fill 0.2s' }}
+                                    onClick={() => setSelectedConnection(isSelected ? null : conn.key)}
+                                />
+                            </g>
+                        );
+                    })}
+
+                    {/* Nodes */}
                     {Object.keys(positions).map(nodeId => {
                         const pos = positions[nodeId];
                         const isVisited = visitedNodes.has(nodeId);

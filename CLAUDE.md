@@ -18,8 +18,9 @@ branching-navigator/
 ├── branching-navigator.html    # Main navigator engine
 ├── scenario-editor.html        # Visual editor for scenarios
 ├── theme-editor.html           # Visual editor for themes
+├── shared-styles.css           # Common CSS for editors
 ├── config.json                 # Configuration (scenario + theme files)
-├── defaults.json               # Shared defaults (fontOptions, defaultTheme)
+├── defaults.json               # Shared defaults (layout, fonts, theme)
 ├── scenario-*.json             # Scenario data files
 ├── theme.json                  # Theme configuration (colors, branding)
 ├── start-navigator.bat         # Launch navigator (port 8000)
@@ -72,12 +73,14 @@ Use this format in HTML files:
 
 ### Tree Map Layout
 
-| Constant | Value | Used in |
-|----------|-------|---------|
-| `nodeWidth` | 140px | Both files |
-| `levelHeight` | 120px | Tree vertical spacing |
-| `nodeHeight` | 44px | Editor only |
-| `padding` | 60px | Both files |
+Layout constants are centralized in `defaults.json` under the `layout` key:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `nodeWidth` | 140px | Horizontal spacing between nodes |
+| `levelHeight` | 120px | Vertical spacing between levels |
+| `nodeHeight` | 44px | Node box height (editor only) |
+| `padding` | 60px | SVG padding around the tree |
 
 ### Text Truncation
 
@@ -111,10 +114,16 @@ All content uses plain strings (monolingual):
 
 ## Defaults (defaults.json)
 
-Centralized definitions shared between navigator and theme editor:
+Centralized definitions shared between all components:
 
 ```json
 {
+    "layout": {
+        "levelHeight": 120,
+        "nodeWidth": 140,
+        "nodeHeight": 44,
+        "padding": 60
+    },
     "fontOptions": {
         "system": { "name": "System Default", "family": "...", "google": false },
         "inter": { "name": "Inter", "family": "'Inter', sans-serif", "google": true }
@@ -130,7 +139,7 @@ Centralized definitions shared between navigator and theme editor:
 }
 ```
 
-**⚠️ Required**: Both `branching-navigator.html` and `theme-editor.html` load this file at startup. It must be present for the application to work.
+**⚠️ Required**: All HTML files load this file at startup. It must be present for the application to work.
 
 ## Theme Structure
 
@@ -161,6 +170,59 @@ Theme files define colors and branding. All values are optional (defaults from `
 
 Multiple theme files can be created (e.g., `theme-dark.json`, `theme-corporate.json`) and switched via `config.json`.
 
+## Tree Map Features
+
+Both navigator and editor maps share consistent visual features:
+
+### Connection Types & Colors
+
+| Type | Color | Style | Description |
+|------|-------|-------|-------------|
+| Forward (unvisited) | Theme gray | Dashed | Normal progression to next level |
+| Forward (visited) | Theme accent | Solid | Already traversed path |
+| Backward (loop) | `#f59e0b` amber | Solid + curve | Returns to higher level |
+| Same level | `#8b5cf6` purple | Solid + curve | Horizontal connection |
+| Selected/Hover | `#6366f1` indigo | Solid, 4px | User interaction highlight |
+
+### Visual Features
+
+- **Arrows at midpoint**: All connections display directional arrows at the center of the line
+- **Curved paths**: Backward and same-level connections use quadratic bezier curves
+- **Click to select**: Click any connection to highlight it (toggle)
+- **Hover effect**: Connections highlight on mouse hover
+- **Wide click area**: Invisible 15px path for easier selection
+
+### Arrow Size
+
+Arrow polygon: `points="-10,-6 10,0 -10,6"` (consistent across both maps)
+
+## Choice Editor (Scenario Editor)
+
+### Validation System
+
+The ChoiceEditor uses a "Save Choice" pattern with dual validation:
+
+| Field | Required | Validation |
+|-------|----------|------------|
+| Button Text | Yes | Non-empty string |
+| Target Node | Yes | Must select a node |
+
+### Visual States
+
+| State | Border Color | Indicator |
+|-------|--------------|-----------|
+| Incomplete | Gray `#e5e7eb` | - |
+| Unsaved changes | Amber `#f59e0b` | `● unsaved` |
+| Complete & saved | Green `#10b981` | `✓` |
+| Validation error | Red `#ef4444` | Error message |
+
+### Behavior
+
+1. Changes are tracked locally until "Save Choice" is clicked
+2. Save validates both fields are filled
+3. Creating a new node auto-saves if button text exists
+4. Visual feedback shows save state at all times
+
 ## Review Focus
 
 When reviewing this project, check:
@@ -170,3 +232,5 @@ When reviewing this project, check:
 - [ ] Section separators present in both HTML files
 - [ ] Credits visible in both navigator and editor
 - [ ] Scenario JSON files have complete `translations` section
+- [ ] Map connections use correct colors for connection types
+- [ ] Arrows display at midpoint of all connections
