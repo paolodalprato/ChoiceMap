@@ -119,6 +119,8 @@ http://localhost:8000/scenario-editor.html
 - **Visual Map View**: Interactive tree visualization of your scenario
 - **Inline Node Creation**: Create new nodes directly from the choice dropdown
 - **Choice Text Validation**: The editor requires button text when creating nodes (prevents invisible choices)
+- **Node Creation Validation**: Both Node ID and Node content are required when creating new nodes (prevents incomplete nodes)
+- **Self-Reference Prevention**: Nodes cannot connect to themselves in the Target Node dropdown (prevents circular loops)
 - **Live Preview**: Test your scenario directly from the editor
 - **Resource Management**: Add downloads, links, and videos to any node
 
