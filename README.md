@@ -59,19 +59,22 @@ branching-navigator/
 
 ## 🚀 Quick Start
 
-### Option 1: Using Start Scripts (Windows)
+### Option 1: Using Start Scripts (Windows only)
 
 - Double-click `start-navigator.bat` to run the navigator
 - Double-click `start-editor.bat` to run the scenario editor
 - Double-click `start-theme-editor.bat` to run the theme editor
 
-### Option 2: Manual Start
+> **Note for Mac/Linux users**: The `.bat` files are Windows-only. Use Option 2 (manual start) instead — it works on all operating systems.
+
+### Option 2: Manual Start (All platforms)
 
 1. Open a terminal in the project folder
 2. Start a local server:
    ```bash
    python -m http.server 8000
    ```
+   On some systems you may need `python3` instead of `python`.
 3. Open in your browser:
    - Navigator: `http://localhost:8000/branching-navigator.html`
    - Editor: `http://localhost:8000/scenario-editor.html`
@@ -277,6 +280,50 @@ The scenario is defined in a simple JSON format with plain strings:
 | `download` | Downloadable file (PDF, DOC, etc.) | 📥 |
 | `link` | External URL (opens in new tab) | 🔗 |
 | `video` | Video link | 🎬 |
+
+### Local Resources
+
+You can use relative URLs for local files (logos, PDFs, attachments) instead of external URLs. This works both during local development and after deployment.
+
+**Recommended structure:**
+
+```
+your-project/
+├── branching-navigator.html
+├── config.json
+├── scenario.json
+├── theme.json
+└── docs/                    # Local resources folder
+    ├── company-logo.png
+    ├── user-guide.pdf
+    └── intro-video.mp4
+```
+
+**Usage in theme.json:**
+
+```json
+{
+    "brand": {
+        "logo": "docs/company-logo.png"
+    }
+}
+```
+
+**Usage in scenario resources:**
+
+```json
+{
+    "resources": [
+        {
+            "type": "download",
+            "label": "User Guide",
+            "url": "docs/user-guide.pdf"
+        }
+    ]
+}
+```
+
+When deploying to a web server, upload the `docs/` folder along with the other files. The relative paths will work identically.
 
 ## 🌐 Deployment
 
