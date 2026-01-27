@@ -52,7 +52,7 @@ ChoiceMap/
 ├── scenario-quiz.json          # Example: quiz with correct/wrong feedback
 ├── scenario-workflow.json      # Example: customer support escalation
 ├── scenario-sample.json        # Template: narrative with multiple paths
-├── start-choicemap.bat         # Quick start for navigator (Windows)
+├── start-navigator.bat         # Quick start for navigator (Windows)
 ├── start-scenario-editor.bat   # Quick start for scenario editor (Windows)
 ├── start-theme-editor.bat      # Quick start for theme editor (Windows)
 ├── README.md                   # This file
@@ -65,7 +65,7 @@ ChoiceMap/
 
 ### Option 1: Using Start Scripts (Windows only)
 
-- Double-click `start-choicemap.bat` to run the navigator
+- Double-click `start-navigator.bat` to run the navigator
 - Double-click `start-scenario-editor.bat` to run the scenario editor
 - Double-click `start-theme-editor.bat` to run the theme editor
 

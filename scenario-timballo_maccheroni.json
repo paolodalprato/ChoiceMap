@@ -1,0 +1,291 @@
+{
+  "meta": {
+    "title": "Timballo di Maccheroni",
+    "description": "Ricetta interattiva ispirata a Pellegrino Artusi, con varianti classica, vegetariana e vegana",
+    "author": "Paolo Dalprato"
+  },
+  "translations": {
+    "step": "Passo",
+    "restart": "Ricomincia",
+    "endOfPath": "Fine di questo percorso",
+    "resources": "Risorse",
+    "viewMap": "Vedi mappa",
+    "mapOf": "Mappa di",
+    "back": "Indietro",
+    "download": "Scarica",
+    "openLink": "Apri",
+    "watchVideo": "Guarda"
+  },
+  "startNode": "intro_1",
+  "nodes": {
+    "intro_1": {
+      "content": "# Timballo di Maccheroni\n\nUna ricetta classica della cucina italiana, ispirata a Pellegrino Artusi.\n\nQuesta guida interattiva ti accompagna nella preparazione, permettendoti di scegliere tra varianti **classica**, **vegetariana** e **vegana** in ogni passaggio.",
+      "choices": [
+        { "text": "Continua", "next": "intro_2" }
+      ],
+      "resources": []
+    },
+    "intro_2": {
+      "content": "# Come funziona questa guida\n\nIl timballo ha più preparazioni parallele:\n\n- **Pasta**: cuocere e condire i maccheroni\n- **Ripieno**: ragù + besciamella + complementi\n- **Stampo**: preparare lo stampo per la cottura\n\nPuoi farle nell'ordine che preferisci. Quando tutte sono pronte, passerai all'assemblaggio e alla cottura.",
+      "choices": [
+        { "text": "Continua", "next": "intro_3" }
+      ],
+      "resources": []
+    },
+    "intro_3": {
+      "content": "# Le varianti\n\nIn ogni passaggio potrai scegliere:\n\n| Variante | Grassi | Proteine | Latticini |\n|----------|--------|----------|----------|\n| **Classica** | Burro | Carne | Latte, formaggi |\n| **Vegetariana** | Burro | Funghi | Latte, formaggi |\n| **Vegana** | Olio | Lenticchie | Latte di soia, no formaggi |\n\nOgni scelta è indipendente: puoi mescolare come preferisci.",
+      "choices": [
+        { "text": "Iniziamo!", "next": "hub_main" }
+      ],
+      "resources": []
+    },
+
+    "hub_main": {
+      "content": "# Cosa vuoi preparare?\n\nScegli una preparazione. Quando tutte saranno pronte, potrai assemblare e cuocere il timballo.\n\n*Ricorda: puoi farle nell'ordine che preferisci.*",
+      "choices": [
+        { "text": "🍝 Pasta", "next": "pasta_scelta" },
+        { "text": "🍖 Ripieno", "next": "hub_ripieno" },
+        { "text": "🍳 Stampo", "next": "stampo_scelta" },
+        { "text": "✅ Tutto pronto: assembla e cuoci", "next": "assembla_1" }
+      ],
+      "resources": []
+    },
+
+    "pasta_scelta": {
+      "content": "# Pasta\n\nDopo la cottura, la pasta va condita leggermente per non farla attaccare.\n\n**Scegli il grasso per condire:**",
+      "choices": [
+        { "text": "Burro (classica/vegetariana)", "next": "pasta_burro" },
+        { "text": "Olio (vegana)", "next": "pasta_olio" }
+      ],
+      "resources": []
+    },
+    "pasta_burro": {
+      "content": "# Pasta – Ingredienti\n\n- Maccheroni o altra pasta corta: **350 g**\n- Burro: **30 g**\n- Sale per l'acqua: q.b.",
+      "choices": [
+        { "text": "Procedimento", "next": "pasta_processo" }
+      ],
+      "resources": []
+    },
+    "pasta_olio": {
+      "content": "# Pasta – Ingredienti (vegana)\n\n- Maccheroni o altra pasta corta: **350 g**\n- Olio extravergine: **2 cucchiai** (~30 ml)\n- Sale per l'acqua: q.b.",
+      "choices": [
+        { "text": "Procedimento", "next": "pasta_processo" }
+      ],
+      "resources": []
+    },
+    "pasta_processo": {
+      "content": "# Pasta – Procedimento\n\n1. Porta a ebollizione abbondante acqua salata\n2. Cuoci i maccheroni **molto al dente** (togli 2-3 minuti dal tempo indicato)\n3. Scola e condisci subito con il grasso scelto\n4. Mescola bene e lascia intiepidire\n\n*La pasta finirà di cuocere in forno.*\n\n---\n✅ **Pasta pronta!**",
+      "choices": [
+        { "text": "Torna al menu principale", "next": "hub_main" }
+      ],
+      "resources": []
+    },
+
+    "hub_ripieno": {
+      "content": "# Ripieno\n\nIl ripieno è composto da tre elementi:\n\n- **Ragù**: la base saporita\n- **Besciamella**: il legante cremoso\n- **Complementi**: funghi, formaggi o altro\n\nPreparali separatamente, poi uniscili.\n\n*Scegli cosa preparare:*",
+      "choices": [
+        { "text": "🥩 Ragù", "next": "ragu_scelta" },
+        { "text": "🥛 Besciamella", "next": "besciamella_scelta" },
+        { "text": "🧀 Complementi", "next": "complementi_scelta" },
+        { "text": "🥄 Unisci il ripieno", "next": "ripieno_unisci" },
+        { "text": "← Torna al menu principale", "next": "hub_main" }
+      ],
+      "resources": []
+    },
+
+    "ragu_scelta": {
+      "content": "# Ragù\n\n**Scegli la versione:**",
+      "choices": [
+        { "text": "Classica (carne)", "next": "ragu_classico_ing" },
+        { "text": "Vegetariana (funghi)", "next": "ragu_vegetariano_ing" },
+        { "text": "Vegana (lenticchie)", "next": "ragu_vegano_ing" }
+      ],
+      "resources": []
+    },
+    "ragu_classico_ing": {
+      "content": "# Ragù Classico – Ingredienti\n\n- Carne di vitello (polpa o macinata grossa): **200 g**\n- Cipolla: **1 piccola** (~60 g)\n- Carota: **½** (~40 g)\n- Sedano: **½ costa**\n- Burro: **30 g**\n- Brodo: **½ bicchiere** (~100 ml)\n- Sale e pepe: q.b.",
+      "choices": [
+        { "text": "Procedimento", "next": "ragu_classico_proc" }
+      ],
+      "resources": []
+    },
+    "ragu_classico_proc": {
+      "content": "# Ragù Classico – Procedimento\n\n1. Trita finemente cipolla, carota e sedano\n2. Fai soffriggere dolcemente nel burro per 5-7 minuti\n3. Aggiungi la carne e rosola a fuoco vivace\n4. Bagna con il brodo\n5. Abbassa la fiamma e cuoci lentamente per 30-40 minuti\n6. Il ragù è pronto quando l'intingolo si è ristretto\n\n---\n✅ **Ragù classico pronto!**",
+      "choices": [
+        { "text": "Torna al ripieno", "next": "hub_ripieno" }
+      ],
+      "resources": []
+    },
+    "ragu_vegetariano_ing": {
+      "content": "# Ragù Vegetariano – Ingredienti\n\n- Funghi freschi o secchi (rinvenuti): **300 g**\n- Cipolla: **1 piccola** (~60 g)\n- Carota: **½** (~40 g)\n- Sedano: **½ costa**\n- Burro: **30 g**\n- Brodo vegetale: **½ bicchiere** (~100 ml)\n- Sale e pepe: q.b.",
+      "choices": [
+        { "text": "Procedimento", "next": "ragu_vegetariano_proc" }
+      ],
+      "resources": []
+    },
+    "ragu_vegetariano_proc": {
+      "content": "# Ragù Vegetariano – Procedimento\n\n1. Trita finemente cipolla, carota e sedano\n2. Pulisci e taglia i funghi a pezzetti\n3. Fai soffriggere gli odori nel burro per 5-7 minuti\n4. Aggiungi i funghi e rosola a fuoco vivace\n5. Bagna con il brodo vegetale\n6. Cuoci per 20-25 minuti fino a ottenere un intingolo saporito\n\n---\n✅ **Ragù vegetariano pronto!**",
+      "choices": [
+        { "text": "Torna al ripieno", "next": "hub_ripieno" }
+      ],
+      "resources": []
+    },
+    "ragu_vegano_ing": {
+      "content": "# Ragù di Lenticchie – Ingredienti\n\n- Lenticchie classiche: **250 g**\n- Lenticchie rosse decorticate: **150 g**\n- Cipolla dorata: **½** (o parte bianca di un porro)\n- Sedano: **½ gambo**\n- Carota: **1**\n- Doppio concentrato di pomodoro: **1 cucchiaio**\n- Brodo vegetale: **100 ml** (al posto del vino)\n- Passata di pomodoro: **1 L**\n- Acqua: **600 ml**\n- Rosmarino: **1 rametto**\n- Salvia: **3 foglie**\n- Olio extravergine: **3-4 cucchiai**\n- Sale: **½ cucchiaino**",
+      "choices": [
+        { "text": "Procedimento", "next": "ragu_vegano_proc" }
+      ],
+      "resources": []
+    },
+    "ragu_vegano_proc": {
+      "content": "# Ragù di Lenticchie – Procedimento\n\n1. Scalda l'olio in una casseruola\n2. Versa cipolla, carota e sedano tagliati a dadini\n3. Stufa per 5 minuti a fiamma bassa\n4. Aggiungi le lenticchie sciacquate, rosmarino e salvia\n5. Fai tostare un paio di minuti\n6. Sfuma con il brodo vegetale\n7. Aggiungi acqua, passata di pomodoro e sale\n8. Copri e cuoci per 30 minuti mescolando ogni tanto\n9. Controlla la cottura: se le lenticchie sono ancora dure, continua per altri 10 minuti\n\n---\n✅ **Ragù di lenticchie pronto!**",
+      "choices": [
+        { "text": "Torna al ripieno", "next": "hub_ripieno" }
+      ],
+      "resources": []
+    },
+
+    "besciamella_scelta": {
+      "content": "# Besciamella\n\n**Scegli la versione:**",
+      "choices": [
+        { "text": "Classica (burro e latte)", "next": "besciamella_classica_ing" },
+        { "text": "Vegana (olio e latte di soia)", "next": "besciamella_vegana_ing" }
+      ],
+      "resources": []
+    },
+    "besciamella_classica_ing": {
+      "content": "# Besciamella Classica – Ingredienti\n\n- Burro: **40 g**\n- Farina: **40 g**\n- Latte intero: **500 ml**\n- Sale: q.b.\n- Noce moscata: un pizzico",
+      "choices": [
+        { "text": "Procedimento", "next": "besciamella_proc" }
+      ],
+      "resources": []
+    },
+    "besciamella_vegana_ing": {
+      "content": "# Besciamella Vegana – Ingredienti\n\n- Olio extravergine (o di semi): **40 ml** (~3 cucchiai)\n- Farina: **40 g**\n- Latte di soia (non dolcificato): **500 ml**\n- Sale: q.b.\n- Noce moscata: un pizzico",
+      "choices": [
+        { "text": "Procedimento", "next": "besciamella_proc" }
+      ],
+      "resources": []
+    },
+    "besciamella_proc": {
+      "content": "# Besciamella – Procedimento\n\n1. Scalda il grasso (burro o olio) in una casseruola\n2. Aggiungi la farina e mescola con una frusta\n3. Cuoci il roux per 1-2 minuti senza farlo colorire\n4. Versa il latte caldo a filo, mescolando continuamente\n5. Continua a mescolare finché la salsa si addensa\n6. Aggiusta di sale e noce moscata\n\n*La consistenza deve essere cremosa ma non troppo densa.*\n\n---\n✅ **Besciamella pronta!**",
+      "choices": [
+        { "text": "Torna al ripieno", "next": "hub_ripieno" }
+      ],
+      "resources": []
+    },
+
+    "complementi_scelta": {
+      "content": "# Complementi\n\nGli ingredienti complementari arricchiscono il ripieno.\n\n**Scegli la versione:**",
+      "choices": [
+        { "text": "Con formaggi (classica/vegetariana)", "next": "complementi_formaggi" },
+        { "text": "Solo funghi (vegana)", "next": "complementi_vegani" }
+      ],
+      "resources": []
+    },
+    "complementi_formaggi": {
+      "content": "# Complementi – Con formaggi\n\nScegli uno o combina in piccola quantità:\n\n- Funghi (freschi o secchi rinvenuti): **100 g**\n- Parmigiano o grana grattugiato: **60 g**\n- Avanzi di arrosto o prosciutto cotto: **50-80 g** *(opzionale)*\n\n**Preparazione:**\n\n1. Se usi funghi: puliscili e affettali, saltali brevemente in padella\n2. Grattugia il formaggio\n3. Se usi avanzi di carne: tagliala a dadini\n\n---\n✅ **Complementi pronti!**",
+      "choices": [
+        { "text": "Torna al ripieno", "next": "hub_ripieno" }
+      ],
+      "resources": []
+    },
+    "complementi_vegani": {
+      "content": "# Complementi – Versione vegana\n\n- Funghi (freschi o secchi rinvenuti): **150 g**\n\n**Preparazione:**\n\n1. Pulisci i funghi e affettali\n2. Saltali in padella con un filo d'olio\n3. Regola di sale\n\n*Puoi aggiungere erbe aromatiche a piacere (timo, prezzemolo).*\n\n---\n✅ **Complementi pronti!**",
+      "choices": [
+        { "text": "Torna al ripieno", "next": "hub_ripieno" }
+      ],
+      "resources": []
+    },
+
+    "ripieno_unisci": {
+      "content": "# Unisci il ripieno\n\nAssicurati di aver preparato:\n- ✓ Ragù\n- ✓ Besciamella\n- ✓ Complementi\n\n**Procedimento:**\n\n1. In una ciotola capiente, unisci il ragù e la besciamella\n2. Aggiungi i complementi (funghi, formaggi, altro)\n3. Mescola delicatamente fino a ottenere un composto omogeneo\n4. Assaggia e aggiusta di sale se necessario\n\n---\n✅ **Ripieno completo!**",
+      "choices": [
+        { "text": "Torna al menu principale", "next": "hub_main" }
+      ],
+      "resources": []
+    },
+
+    "stampo_scelta": {
+      "content": "# Stampo\n\nLo stampo va preparato per evitare che il timballo si attacchi.\n\n**Scegli il grasso:**",
+      "choices": [
+        { "text": "Burro (classica/vegetariana)", "next": "stampo_burro" },
+        { "text": "Olio (vegana)", "next": "stampo_olio" }
+      ],
+      "resources": []
+    },
+    "stampo_burro": {
+      "content": "# Stampo – Ingredienti\n\n- Burro: **20 g**\n- Pangrattato: **2 cucchiai colmi**",
+      "choices": [
+        { "text": "Procedimento", "next": "stampo_proc" }
+      ],
+      "resources": []
+    },
+    "stampo_olio": {
+      "content": "# Stampo – Ingredienti (vegano)\n\n- Olio extravergine: **2 cucchiai** (~20 ml)\n- Pangrattato: **2 cucchiai colmi**",
+      "choices": [
+        { "text": "Procedimento", "next": "stampo_proc" }
+      ],
+      "resources": []
+    },
+    "stampo_proc": {
+      "content": "# Stampo – Procedimento\n\n1. Ungi bene tutto l'interno dello stampo con il grasso scelto\n2. Aggiungi il pangrattato\n3. Ruota lo stampo per distribuirlo uniformemente su fondo e pareti\n4. Elimina l'eccesso capovolgendo e battendo leggermente\n\n*Usa uno stampo a cerniera o a pareti alte, circa 24-26 cm di diametro.*\n\n---\n✅ **Stampo pronto!**",
+      "choices": [
+        { "text": "Torna al menu principale", "next": "hub_main" }
+      ],
+      "resources": []
+    },
+
+    "assembla_1": {
+      "content": "# Assemblaggio\n\nPrima di procedere, verifica di aver completato:\n\n- ✓ Pasta (cotta e condita)\n- ✓ Ripieno (ragù + besciamella + complementi, uniti)\n- ✓ Stampo (unto e impanato)\n\n*Se manca qualcosa, torna al menu principale.*",
+      "choices": [
+        { "text": "Tutto pronto, procedi", "next": "assembla_2" },
+        { "text": "← Torna al menu principale", "next": "hub_main" }
+      ],
+      "resources": []
+    },
+    "assembla_2": {
+      "content": "# Assemblaggio – Procedimento\n\n1. **Rivesti lo stampo**: disponi uno strato di pasta sul fondo e sulle pareti, premendo bene\n\n2. **Inserisci il ripieno**: versa il composto di ragù, besciamella e complementi\n\n3. **Copri**: chiudi con altra pasta, sigillando bene i bordi\n\n4. **Livella**: premi delicatamente per compattare",
+      "choices": [
+        { "text": "Continua", "next": "assembla_rifiniture" }
+      ],
+      "resources": []
+    },
+    "assembla_rifiniture": {
+      "content": "# Rifiniture\n\n**Scegli il grasso per la superficie:**",
+      "choices": [
+        { "text": "Burro (classica/vegetariana)", "next": "rifiniture_burro" },
+        { "text": "Olio (vegana)", "next": "rifiniture_olio" }
+      ],
+      "resources": []
+    },
+    "rifiniture_burro": {
+      "content": "# Rifiniture – Burro\n\n- Burro: **20 g**\n\nDistribuisci fiocchetti di burro sulla superficie del timballo.",
+      "choices": [
+        { "text": "Vai alla cottura", "next": "cottura" }
+      ],
+      "resources": []
+    },
+    "rifiniture_olio": {
+      "content": "# Rifiniture – Olio\n\n- Olio extravergine: **2 cucchiai** (~20 ml)\n\nSpennella o versa l'olio sulla superficie del timballo.",
+      "choices": [
+        { "text": "Vai alla cottura", "next": "cottura" }
+      ],
+      "resources": []
+    },
+    "cottura": {
+      "content": "# Cottura\n\n⚠️ **Fase irreversibile**\n\n1. **Forno**: preriscalda a **180°C** (statico) o **160°C** (ventilato)\n\n2. **Cuoci** per **40-50 minuti**, finché la superficie è ben dorata\n\n3. **Riposo**: sforna e lascia riposare **10 minuti** nello stampo\n\n4. **Sforma**: capovolgi su un piatto da portata\n\n*Il riposo è fondamentale: permette al timballo di assestarsi e facilita lo sformatura.*",
+      "choices": [
+        { "text": "Continua", "next": "fine" }
+      ],
+      "resources": []
+    },
+    "fine": {
+      "content": "# Timballo pronto!\n\n🎉 Complimenti!\n\nIl tuo timballo di maccheroni è pronto per essere servito.\n\n**Suggerimenti:**\n- Servi caldo ma non bollente\n- Taglia con un coltello affilato\n- Accompagna con un'insalata fresca\n\n*Buon appetito!*",
+      "choices": [
+        { "text": "Ricomincia", "next": "intro_1" }
+      ],
+      "resources": []
+    }
+  }
+}
