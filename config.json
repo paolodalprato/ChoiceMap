@@ -1,5 +1,5 @@
 {
-    "scenario": "scenario-timballo_maccheroni.json",
+    "scenario": "scenario-navigator.json",
     "theme": "theme.json",
     "showCredits": true
 }
