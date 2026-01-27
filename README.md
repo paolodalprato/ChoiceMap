@@ -18,7 +18,7 @@ Then start a local server (see [Quick Start](#-quick-start) below).
 ## ✨ Features
 
 - **Interactive Decision Trees**: Create multi-path narratives where user choices shape the journey
-- **Visual Journey Map**: Real-time tree visualization with clickable nodes for quick navigation and CTRL/CMD+drag repositioning
+- **Visual Journey Map**: Real-time tree visualization with double-click navigation and CTRL/CMD+drag repositioning
 - **Simple JSON Format**: Plain strings for all content, no complex structures
 - **JSON-Based Content**: Easy-to-edit scenario files, no coding required for content changes
 - **Visual Scenario Editor**: Dedicated tool for creating and managing scenarios

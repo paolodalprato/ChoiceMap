@@ -221,8 +221,8 @@
                 setDraggingNode(nodeId);
             };
 
-            // Click (without CTRL) to navigate to visited node
-            const handleNodeClickInternal = (e, nodeId) => {
+            // Double-click (without CTRL) to navigate to visited node
+            const handleNodeDoubleClick = (e, nodeId) => {
                 if (e.ctrlKey || e.metaKey || draggingNode) return;
                 if (visitedNodes.has(nodeId)) {
                     onNodeClick(nodeId);
@@ -344,7 +344,7 @@
                                        className={`tree-node ${isVisited ? 'visited' : 'not-visited'} ${isCurrent ? 'current' : ''} ${isDragging ? 'dragging' : ''}`}
                                        style={{ cursor: isDragging ? 'grabbing' : (isVisited ? 'pointer' : 'default') }}
                                        onMouseDown={(e) => handleMouseDown(e, nodeId)}
-                                       onClick={(e) => handleNodeClickInternal(e, nodeId)}>
+                                       onDoubleClick={(e) => handleNodeDoubleClick(e, nodeId)}>
                                         <rect x={pos.x - nodeWidth/2 + 10} y={pos.y - nodeHeight/2} width={nodeWidth - 20} height={nodeHeight} rx={8} fill={fill} stroke={stroke} strokeWidth={2} style={{ filter: isDragging ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' : 'none' }} />
                                         <text x={pos.x} y={pos.y + 4} textAnchor="middle" dominantBaseline="middle" fill={textFill} fontSize="11" fontWeight="500" style={{ pointerEvents: 'none', userSelect: 'none' }}>{getNodeLabel(nodeId)}</text>
                                     </g>
@@ -352,7 +352,7 @@
                             })}
                         </svg>
                     </div>
-                    <div className="map-footer">💡 Click visited nodes to navigate • CTRL+drag to reposition</div>
+                    <div className="map-footer">💡 Double-click visited nodes to navigate • CTRL+drag to reposition</div>
                 </div>
             );
         };
