@@ -285,6 +285,8 @@ The scenario is defined in a simple JSON format with plain strings:
     "nodes": {
         "start": {
             "content": "# Welcome\n\nThis is **markdown** content.",
+            "level": 1,
+            "position": { "x": 0, "y": 0 },
             "choices": [
                 { "text": "Option A", "next": "node_a" },
                 { "text": "Option B", "next": "node_b" }
@@ -296,6 +298,16 @@ The scenario is defined in a simple JSON format with plain strings:
 ```
 
 > ⚠️ **Required**: The `translations` section is mandatory. Without it, navigation buttons will have no text.
+
+### Node Fields
+
+| Field | Description |
+|-------|-------------|
+| `content` | Markdown content displayed in the node |
+| `level` | Hierarchical level for map positioning and loop detection (auto-calculated if omitted) |
+| `position` | Map coordinates `{ x, y }` — placeholder `{ x: 0, y: 0 }` triggers auto-layout on save |
+| `choices` | Array of choices leading to other nodes |
+| `resources` | Array of attached resources (links, downloads, videos) |
 
 ### Supported Markdown
 

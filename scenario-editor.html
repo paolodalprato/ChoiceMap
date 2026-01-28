@@ -186,9 +186,10 @@
                 const positions = {};
                 
                 Object.keys(nodes).forEach(nodeId => {
-                    // Use saved position if available, otherwise use auto-calculated
-                    if (nodes[nodeId].position) {
-                        positions[nodeId] = { ...nodes[nodeId].position };
+                    const savedPos = nodes[nodeId].position;
+                    // Use saved position if available and not placeholder (0,0), otherwise use auto-calculated
+                    if (savedPos && !(savedPos.x === 0 && savedPos.y === 0)) {
+                        positions[nodeId] = { ...savedPos };
                     } else {
                         positions[nodeId] = autoLayout.positions[nodeId] || { x: padding, y: padding };
                     }
@@ -547,7 +548,7 @@
                 meta: { title: 'New Scenario', description: '', author: '' },
                 translations: { ...defaultTranslations },
                 startNode: 'start',
-                nodes: { start: { content: '# Welcome\n\nEdit this content.', level: 1, choices: [], resources: [] } }
+                nodes: { start: { content: '# Welcome\n\nEdit this content.', level: 1, position: { x: 0, y: 0 }, choices: [], resources: [] } }
             };
         };
         
@@ -611,8 +612,8 @@
 
             if (hasError) return;
 
-            // Include level in the new node
-            onCreateNode(cleanId, { content: cleanContent, level: level, choices: [], resources: [] });
+            // Include level and placeholder position in the new node
+            onCreateNode(cleanId, { content: cleanContent, level: level, position: { x: 0, y: 0 }, choices: [], resources: [] });
             onCreated(cleanId);
         };
 
@@ -1178,8 +1179,23 @@
             };
             
             const handleSave = () => {
+                // Apply auto-layout positions to nodes with placeholder values (0,0)
+                const { positions } = calculateAutoPositions(scenario.nodes, scenario.startNode);
+                const nodesWithPositions = {};
+                Object.keys(scenario.nodes).forEach(id => {
+                    const node = scenario.nodes[id];
+                    // Update position if it's a placeholder (0,0) or undefined
+                    const pos = node.position;
+                    if (!pos || (pos.x === 0 && pos.y === 0)) {
+                        nodesWithPositions[id] = { ...node, position: { x: positions[id].x, y: positions[id].y } };
+                    } else {
+                        nodesWithPositions[id] = node;
+                    }
+                });
+                const scenarioToSave = { ...scenario, nodes: nodesWithPositions };
+                
                 const saveName = fileName || 'scenario.json';
-                const json = JSON.stringify(scenario, null, 4);
+                const json = JSON.stringify(scenarioToSave, null, 4);
                 const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
