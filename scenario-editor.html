@@ -51,7 +51,7 @@
         .legend-terminal { border-color: #f59e0b; background: #78350f; }
         .legend-selected { border-color: #818cf8; background: #3730a3; }
         .legend-orphan { border-color: #ef4444; background: #7f1d1d; }
-        .map-overlay-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .map-overlay-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; background: #f3f4f6; }
         .map-toolbar { display: flex; gap: 0.5rem; align-items: center; }
         .map-toolbar .btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
         .draggable-node { cursor: pointer; }
@@ -414,7 +414,7 @@
                             ref={svgRef}
                             width={svgSize.width} 
                             height={svgSize.height} 
-                            style={{ display: 'block', margin: 'auto', cursor: draggingNode ? 'grabbing' : 'default' }}
+                            style={{ display: 'block', margin: 'auto', cursor: draggingNode ? 'grabbing' : 'default', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                         >
                             {/* Connections with midpoint arrows */}
                             {connections.map((conn) => {
@@ -671,7 +671,7 @@
         // ============================================================
         // CHOICE EDITOR COMPONENT
         // ============================================================
-        const ChoiceEditor = ({ choice, index, nodeIds, parentNodeId, nodes, startNode, onChange, onRemove, onCreateNode }) => {
+        const ChoiceEditor = ({ choice, index, nodeIds, parentNodeId, nodes, startNode, siblingChoices, onChange, onRemove, onCreateNode }) => {
             const [showCreate, setShowCreate] = useState(false);
             const [localText, setLocalText] = useState(choice.text || '');
             const [localTarget, setLocalTarget] = useState(choice.next || '');
@@ -680,6 +680,11 @@
 
             // Get parent level for default child level calculation
             const parentLevel = getEffectiveLevel(parentNodeId, nodes, startNode);
+
+            // Get targets already used by other choices (excluding current choice)
+            const usedTargets = siblingChoices
+                .filter((c, i) => i !== index && c.next)
+                .map(c => c.next);
 
             // Check if local values differ from saved values
             const hasUnsavedChanges = localText !== (choice.text || '') || localTarget !== (choice.next || '');
@@ -798,7 +803,7 @@
                         >
                             <option value="">-- Select target --</option>
                             <option value="__CREATE__" style={{ fontWeight: 'bold', color: '#10b981' }}>+ Create new node...</option>
-                            {nodeIds.filter(id => id !== parentNodeId).map(id => <option key={id} value={id}>{id}</option>)}
+                            {nodeIds.filter(id => id !== parentNodeId && !usedTargets.includes(id)).map(id => <option key={id} value={id}>{id}</option>)}
                         </select>
                         {errors.target && (
                             <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -1060,7 +1065,7 @@
 
                     <div className="form-section">
                         <h3>🔀 Choices ({(node.choices || []).length})</h3>
-                        {(node.choices || []).map((choice, i) => <ChoiceEditor key={i} choice={choice} index={i} nodeIds={nodeIds} parentNodeId={nodeId} nodes={nodes} startNode={startNode} onChange={(c) => updateChoice(i, c)} onRemove={() => removeChoice(i)} onCreateNode={onCreateNode} />)}
+                        {(node.choices || []).map((choice, i) => <ChoiceEditor key={i} choice={choice} index={i} nodeIds={nodeIds} parentNodeId={nodeId} nodes={nodes} startNode={startNode} siblingChoices={node.choices || []} onChange={(c) => updateChoice(i, c)} onRemove={() => removeChoice(i)} onCreateNode={onCreateNode} />)}
                         <button className="btn btn-success" onClick={addChoice}>+ Add Choice</button>
                         {(node.choices || []).length === 0 && <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.5rem', textAlign: 'center' }}>No choices = terminal node</p>}
                     </div>
@@ -1184,12 +1189,16 @@
                 const nodesWithPositions = {};
                 Object.keys(scenario.nodes).forEach(id => {
                     const node = scenario.nodes[id];
+                    // Filter out incomplete choices (missing text or target)
+                    const validChoices = (node.choices || []).filter(c => c.text && c.text.trim() && c.next);
+                    // Filter out incomplete resources (missing type, url, or label)
+                    const validResources = (node.resources || []).filter(r => r.type && r.url && r.url.trim() && r.label && r.label.trim());
                     // Update position if it's a placeholder (0,0) or undefined
                     const pos = node.position;
                     if (!pos || (pos.x === 0 && pos.y === 0)) {
-                        nodesWithPositions[id] = { ...node, position: { x: positions[id].x, y: positions[id].y } };
+                        nodesWithPositions[id] = { ...node, choices: validChoices, resources: validResources, position: { x: positions[id].x, y: positions[id].y } };
                     } else {
-                        nodesWithPositions[id] = node;
+                        nodesWithPositions[id] = { ...node, choices: validChoices, resources: validResources };
                     }
                 });
                 const scenarioToSave = { ...scenario, nodes: nodesWithPositions };

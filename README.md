@@ -170,6 +170,8 @@ The Map view displays your scenario as a visual tree. Connection colors indicate
 
 Colors are based on **logical hierarchy** (node levels), not visual position. This means loops stay orange even if you reposition nodes with CTRL+drag.
 
+The map canvas (white area) is **dynamic**: it automatically expands when you drag nodes beyond its right or bottom edges. This allows scenarios of any size without fixed boundaries.
+
 ### Manual Level Override
 
 By default, node levels are calculated automatically based on the shortest path from the start node. However, in complex scenarios with multiple paths to the same node, you may need to set levels explicitly.
