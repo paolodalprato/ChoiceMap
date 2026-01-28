@@ -53,7 +53,7 @@
         .btn-secondary:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
         .close-button { background: #ef4444; border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-size: 1rem; font-weight: 600; }
         .close-button:hover { background: #dc2626; }
-        .map-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .map-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; background: #f3f4f6; }
         .map-footer { padding: 0.75rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); }
         .tree-node { cursor: pointer; transition: all 0.3s ease; }
         .tree-node:hover { filter: brightness(1.2); }
@@ -197,7 +197,10 @@
                 const autoLayout = calculateAutoPositions(nodes, scenarioData.startNode);
                 const positions = {};
                 Object.keys(nodes).forEach(nodeId => {
-                    positions[nodeId] = nodes[nodeId].position ? { ...nodes[nodeId].position } : (autoLayout.positions[nodeId] || { x: padding, y: padding });
+                    const pos = nodes[nodeId].position;
+                    // Use auto-layout if position is missing or is placeholder (0,0)
+                    const isPlaceholder = !pos || (pos.x === 0 && pos.y === 0);
+                    positions[nodeId] = isPlaceholder ? (autoLayout.positions[nodeId] || { x: padding, y: padding }) : { ...pos };
                 });
                 setNodePositions(positions);
                 const allX = Object.values(positions).map(p => p.x);
@@ -346,7 +349,7 @@
                         </div>
                     </div>
                     <div className="map-content">
-                        <svg ref={svgRef} width={svgSize.width} height={svgSize.height} style={{ display: 'block', margin: 'auto', cursor: draggingNode ? 'grabbing' : 'default' }}>
+                        <svg ref={svgRef} width={svgSize.width} height={svgSize.height} style={{ display: 'block', margin: 'auto', cursor: draggingNode ? 'grabbing' : 'default', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
                             {connections.map((conn) => {
                                 const pathData = getConnectionPath(conn);
                                 const arrowPos = getArrowPosition(pathData);
