@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="shared-styles.css">
+    <script src="shared-utils.js"></script>
     <style>
         /* Theme Editor specific styles */
         .sidebar { width: 380px; overflow-y: auto; }
@@ -231,18 +232,20 @@
             const [isLoading, setIsLoading] = useState(true);
             const fileInputRef = useRef(null);
 
-            // Helper to deep merge theme with defaults
-            const mergeWithDefaults = (data) => ({
+            // Helper to deep merge theme with defaults (filters out deprecated position field)
+            const mergeWithDefaults = (data) => {
+                const { position, ...brandData } = data.brand || {};
+                return {
                 brand: {
                     ...defaultTheme.brand,
-                    ...data.brand,
-                    position: { ...defaultTheme.brand.position, ...(data.brand?.position || {}) }
+                    ...brandData
                 },
                 typography: { ...defaultTheme.typography, ...data.typography },
                 colors: { ...defaultTheme.colors, ...data.colors },
                 buttons: { ...defaultTheme.buttons, ...data.buttons },
                 map: { ...defaultTheme.map, ...data.map }
-            });
+            };
+            };
 
             // Load defaults.json first, then theme.json
             useEffect(() => {
@@ -294,7 +297,10 @@
             };
 
             const handleSave = () => {
-                const json = JSON.stringify(theme, null, 4);
+                // Remove deprecated position field from brand before saving
+                const { position, ...brandWithoutPosition } = theme.brand || {};
+                const themeToSave = { ...theme, brand: brandWithoutPosition };
+                const json = JSON.stringify(themeToSave, null, 4);
                 const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -478,7 +484,13 @@
             );
         };
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<ThemeEditor />);
+        const { ErrorBoundary } = window.ChoiceMapUtils;
+
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <ErrorBoundary fallbackMessage="The Theme Editor encountered an error. Please reload the page.">
+                <ThemeEditor />
+            </ErrorBoundary>
+        );
     </script>
 </body>
 </html>

@@ -2,11 +2,7 @@
     "brand": {
         "name": "",
         "logo": "",
-        "website": "",
-        "position": {
-            "vertical": "top",
-            "horizontal": "right"
-        }
+        "website": ""
     },
     "typography": {
         "fontFamily": "system"

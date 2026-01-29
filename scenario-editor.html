@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="shared-styles.css">
+    <script src="shared-utils.js"></script>
     <style>
         /* Scenario Editor specific styles */
         .sidebar { width: 280px; }
@@ -88,83 +89,13 @@
         };
         
         // ============================================================
-        // HELPER FUNCTIONS
+        // SHARED UTILITIES (from shared-utils.js)
         // ============================================================
-        const calculateNodeLevels = (nodes, startNode) => {
-            const levels = {};
-            const visited = new Set();
-            const queue = [{ id: startNode, level: 1 }];
-            while (queue.length > 0) {
-                const { id, level } = queue.shift();
-                if (visited.has(id) || !nodes[id]) continue;
-                visited.add(id);
-                if (!levels[level]) levels[level] = [];
-                levels[level].push(id);
-                (nodes[id].choices || []).forEach(choice => {
-                    if (choice.next && !visited.has(choice.next)) queue.push({ id: choice.next, level: level + 1 });
-                });
-            }
-            Object.keys(nodes).forEach(id => { if (!visited.has(id)) { if (!levels[0]) levels[0] = []; levels[0].push(id); } });
-            return levels;
-        };
-        
-        // Get effective level for a node (explicit level takes priority over calculated)
-        const getEffectiveLevel = (nodeId, nodes, startNode) => {
-            // If node has explicit level, use it
-            if (nodes[nodeId]?.level !== undefined && nodes[nodeId]?.level !== null && nodes[nodeId]?.level !== '') {
-                return parseInt(nodes[nodeId].level);
-            }
-            // Otherwise calculate via BFS
-            const levels = calculateNodeLevels(nodes, startNode);
-            for (const [level, nodeIds] of Object.entries(levels)) {
-                if (nodeIds.includes(nodeId)) return parseInt(level);
-            }
-            return 0; // orphan
-        };
+        const { calculateNodeLevels, getEffectiveLevel, getNodeLevel, calculateAutoPositions, ErrorBoundary, sanitizeUrl, sanitizeNodeId } = window.ChoiceMapUtils;
 
-        const getNodeLevel = (nodeId, nodes, startNode) => {
-            const effectiveLevel = getEffectiveLevel(nodeId, nodes, startNode);
-            // Calculate position among nodes at same effective level
-            const nodesAtSameLevel = Object.keys(nodes).filter(id => getEffectiveLevel(id, nodes, startNode) === effectiveLevel);
-            const position = nodesAtSameLevel.indexOf(nodeId) + 1;
-            return { level: effectiveLevel, position };
-        };
-
-        // Calculate automatic positions for nodes without saved positions
-        // Uses effective level (explicit or calculated) for vertical positioning
-        const calculateAutoPositions = (nodes, startNode) => {
-            const { levelHeight, nodeWidth, padding } = layoutConfig;
-            const positions = {};
-            
-            // Group nodes by their effective level
-            const levelGroups = {};
-            Object.keys(nodes).forEach(nodeId => {
-                const effectiveLevel = getEffectiveLevel(nodeId, nodes, startNode);
-                if (!levelGroups[effectiveLevel]) levelGroups[effectiveLevel] = [];
-                levelGroups[effectiveLevel].push(nodeId);
-            });
-            
-            const maxLevel = Math.max(...Object.keys(levelGroups).map(Number), 1);
-            
-            // Calculate max width needed
-            let maxWidth = 0;
-            Object.values(levelGroups).forEach(nodeIds => {
-                maxWidth = Math.max(maxWidth, nodeIds.length * nodeWidth);
-            });
-            
-            // Position nodes by their effective level
-            Object.entries(levelGroups).forEach(([level, nodeIds]) => {
-                const totalWidth = nodeIds.length * nodeWidth;
-                const startX = (maxWidth - totalWidth) / 2 + nodeWidth / 2;
-                nodeIds.forEach((nodeId, index) => {
-                    positions[nodeId] = {
-                        x: startX + index * nodeWidth + padding,
-                        y: parseInt(level) * levelHeight + padding
-                    };
-                });
-            });
-            
-            return { positions, maxWidth, maxLevel };
+        // Wrapper for calculateAutoPositions to use local layoutConfig
+        const calculateAutoPositionsWithConfig = (nodes, startNode) => {
+            return calculateAutoPositions(nodes, startNode, layoutConfig);
         };
         
         // ============================================================
@@ -182,7 +113,7 @@
 
             // Initialize positions from nodes or calculate auto positions
             useEffect(() => {
-                const autoLayout = calculateAutoPositions(nodes, startNode);
+                const autoLayout = calculateAutoPositionsWithConfig(nodes, startNode);
                 const positions = {};
                 
                 Object.keys(nodes).forEach(nodeId => {
@@ -229,11 +160,11 @@
                 setDraggingNode(nodeId);
             };
 
-            // Click handler (without CTRL) - select node and close map
-            const handleNodeClick = (e, nodeId) => {
-                // If CTRL is held or we're dragging, don't handle as click
+            // Double-click handler (without CTRL) - select node and close map
+            const handleNodeDoubleClick = (e, nodeId) => {
+                // If CTRL is held or we're dragging, don't handle as double-click
                 if (e.ctrlKey || e.metaKey || draggingNode) return;
-                
+
                 onSelectNode(nodeId);
                 onClose();
             };
@@ -286,7 +217,7 @@
 
             // Reset all positions to auto-layout
             const handleResetLayout = () => {
-                const autoLayout = calculateAutoPositions(nodes, startNode);
+                const autoLayout = calculateAutoPositionsWithConfig(nodes, startNode);
                 setNodePositions(autoLayout.positions);
                 
                 // Save all reset positions
@@ -491,7 +422,7 @@
                                         className={`draggable-node ${isDragging ? 'dragging' : ''}`}
                                         style={{ cursor: isDragging ? 'grabbing' : 'pointer' }}
                                         onMouseDown={(e) => handleMouseDown(e, nodeId)}
-                                        onClick={(e) => handleNodeClick(e, nodeId)}
+                                        onDoubleClick={(e) => handleNodeDoubleClick(e, nodeId)}
                                     >
                                         <rect 
                                             x={pos.x - nodeWidth/2 + 10} 
@@ -534,7 +465,7 @@
                         </svg>
                     </div>
                     <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '0.8rem', color: '#6b7280' }}>
-                        💡 Click to edit • CTRL+drag to reposition • Positions are saved automatically
+                        💡 Double-click to edit • CTRL+drag to reposition • Positions are saved automatically
                     </div>
                 </div>
             );
@@ -1185,7 +1116,7 @@
             
             const handleSave = () => {
                 // Apply auto-layout positions to nodes with placeholder values (0,0)
-                const { positions } = calculateAutoPositions(scenario.nodes, scenario.startNode);
+                const { positions } = calculateAutoPositionsWithConfig(scenario.nodes, scenario.startNode);
                 const nodesWithPositions = {};
                 Object.keys(scenario.nodes).forEach(id => {
                     const node = scenario.nodes[id];
@@ -1305,7 +1236,11 @@
             );
         };
         
-        ReactDOM.createRoot(document.getElementById('root')).render(<ScenarioEditor />);
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <ErrorBoundary fallbackMessage="The Scenario Editor encountered an error. Please reload the page.">
+                <ScenarioEditor />
+            </ErrorBoundary>
+        );
     </script>
 </body>
 </html>

@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="shared-utils.js"></script>
+    <link rel="stylesheet" href="shared-styles.css">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif); background: var(--bg); min-height: 100vh; overflow-x: hidden; }
@@ -132,35 +134,12 @@
             return '';
         };
 
-        const calculateNodeLevels = (nodes, startNode) => {
-            const levels = {};
-            const visited = new Set();
-            const queue = [{ id: startNode, level: 0 }];
-            while (queue.length > 0) {
-                const { id, level } = queue.shift();
-                if (visited.has(id) || !nodes[id]) continue;
-                visited.add(id);
-                if (!levels[level]) levels[level] = [];
-                levels[level].push(id);
-                (nodes[id].choices || []).forEach(choice => {
-                    if (choice.next && !visited.has(choice.next)) queue.push({ id: choice.next, level: level + 1 });
-                });
-            }
-            return levels;
-        };
+        // Use shared utilities from shared-utils.js
+        const { calculateNodeLevels, calculateAutoPositions, RESOURCE_ICONS, RESOURCE_LABELS, sanitizeUrl, ErrorBoundary } = window.ChoiceMapUtils;
 
-        const calculateAutoPositions = (nodes, startNode) => {
-            const levels = calculateNodeLevels(nodes, startNode);
-            const { levelHeight, nodeWidth, padding } = layoutConfig;
-            const positions = {};
-            let maxWidth = 0;
-            Object.entries(levels).forEach(([level, nodeIds]) => { maxWidth = Math.max(maxWidth, nodeIds.length * nodeWidth); });
-            Object.entries(levels).forEach(([level, nodeIds]) => {
-                const totalWidth = nodeIds.length * nodeWidth;
-                const startX = (maxWidth - totalWidth) / 2 + nodeWidth / 2;
-                nodeIds.forEach((nodeId, index) => { positions[nodeId] = { x: startX + index * nodeWidth + padding, y: parseInt(level) * levelHeight + padding }; });
-            });
-            return { positions, maxWidth, maxLevel: Math.max(...Object.keys(levels).map(Number), 0) };
+        // Wrapper for calculateAutoPositions to use local layoutConfig
+        const calculateAutoPositionsWithConfig = (nodes, startNode) => {
+            return calculateAutoPositions(nodes, startNode, layoutConfig);
         };
 
         const MarkdownContent = ({ content }) => {
@@ -194,7 +173,7 @@
             const { nodeWidth, nodeHeight, padding } = layoutConfig;
 
             useEffect(() => {
-                const autoLayout = calculateAutoPositions(nodes, scenarioData.startNode);
+                const autoLayout = calculateAutoPositionsWithConfig(nodes, scenarioData.startNode);
                 const positions = {};
                 Object.keys(nodes).forEach(nodeId => {
                     const pos = nodes[nodeId].position;
@@ -258,7 +237,7 @@
             }, [draggingNode, handleMouseMove, handleMouseUp]);
 
             const handleResetLayout = () => {
-                const autoLayout = calculateAutoPositions(nodes, scenarioData.startNode);
+                const autoLayout = calculateAutoPositionsWithConfig(nodes, scenarioData.startNode);
                 setNodePositions(autoLayout.positions);
                 const allX = Object.values(autoLayout.positions).map(p => p.x);
                 const allY = Object.values(autoLayout.positions).map(p => p.y);
@@ -339,6 +318,15 @@
                 return { x: mx, y: my, angle: Math.atan2(ty, tx) * 180 / Math.PI };
             };
 
+            // Get connection color based on structure (loop, same level, forward)
+            const getConnectionColor = (conn) => {
+                // Use structure-based colors (same logic as scenario-editor)
+                if (conn.isLoop) return '#f59e0b'; // loop to ancestor - amber
+                if (conn.isSameLevel) return '#8b5cf6'; // same level - purple
+                // Forward connection - use theme color if visited, gray if not
+                return conn.visited ? 'var(--map-line-visited)' : '#d1d5db';
+            };
+
             return (
                 <div className="map-overlay">
                     <div className="map-header">
@@ -353,7 +341,7 @@
                             {connections.map((conn) => {
                                 const pathData = getConnectionPath(conn);
                                 const arrowPos = getArrowPosition(pathData);
-                                const color = conn.visited ? 'var(--map-line-visited)' : 'var(--map-line-unvisited)';
+                                const color = getConnectionColor(conn);
                                 return (
                                     <g key={conn.key}>
                                         <path d={pathData.path} fill="none" stroke={color} strokeWidth={2} />
@@ -450,11 +438,7 @@
             const isTerminal = choices.length === 0;
             const currentIndex = history.indexOf(currentNode) + 1;
 
-            const getResourceIcon = (type) => {
-                if (type === 'video') return '▶️';
-                if (type === 'download') return '📥';
-                return '🔗';
-            };
+            const getResourceIcon = (type) => RESOURCE_ICONS[type] || RESOURCE_ICONS.link;
             const getResourceLabel = (type) => {
                 if (type === 'video') return translations.watchVideo;
                 if (type === 'download') return translations.download;
@@ -464,10 +448,19 @@
             return (
                 <div className="slide-container">
                     <div className="header-bar">
-                        <div className="brand-header">
-                            {showCredits && <span className="brand-name"><a href="https://ai-know.pro" target="_blank" rel="noopener noreferrer">ChoiceMap</a></span>}
-                        </div>
                         <div className="scenario-title">{scenarioData.meta?.title}</div>
+                        <div className="brand-header">
+                            {theme?.brand?.logo && (
+                                theme?.brand?.website
+                                    ? <a href={theme.brand.website} target="_blank" rel="noopener noreferrer"><img src={theme.brand.logo} alt="Logo" className="brand-logo" /></a>
+                                    : <img src={theme.brand.logo} alt="Logo" className="brand-logo" />
+                            )}
+                            {theme?.brand?.name && (
+                                theme?.brand?.website
+                                    ? <a href={theme.brand.website} target="_blank" rel="noopener noreferrer" className="brand-name">{theme.brand.name}</a>
+                                    : <span className="brand-name">{theme.brand.name}</span>
+                            )}
+                        </div>
                     </div>
                     {history.length > 1 && (
                         <button className="back-button" onClick={handleBack}>
@@ -510,7 +503,11 @@
             );
         };
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<ChoiceMap />);
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <ErrorBoundary fallbackMessage="The Navigator encountered an error. Please reload the page.">
+                <ChoiceMap />
+            </ErrorBoundary>
+        );
     </script>
 </body>
 </html>

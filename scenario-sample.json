@@ -21,7 +21,10 @@
         "start": {
             "content": "# Welcome to the Journey\n\nThis is an **interactive exploration** where your choices shape the path ahead.\n\nThere are no right or wrong answers, only different perspectives to discover.\n\n> Each choice opens new possibilities. You can always return to explore other paths.\n\n**Choose your starting direction:**",
             "level": 1,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 340,
+                "y": 180
+            },
             "choices": [
                 {
                     "text": "Path of Knowledge",
@@ -47,7 +50,10 @@
         "knowledge": {
             "content": "# The Path of Knowledge\n\nYou've chosen to explore through **understanding and learning**.\n\nKnowledge builds upon itself, layer by layer:\n\n- First comes curiosity\n- Then investigation\n- Finally, comprehension\n\n> \"The more you know, the more you realize how much you don't know.\"\n\n**How do you prefer to learn?**",
             "level": 2,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 200,
+                "y": 300
+            },
             "choices": [
                 {
                     "text": "Through theory",
@@ -63,7 +69,10 @@
         "action": {
             "content": "# The Path of Action\n\nYou've chosen to move forward through **doing and experimenting**.\n\nAction teaches through direct experience:\n\n- Try something new\n- Observe the results\n- Adjust and try again\n\n> \"The journey of a thousand miles begins with a single step.\"\n\n**What kind of action calls to you?**",
             "level": 2,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 340,
+                "y": 300
+            },
             "choices": [
                 {
                     "text": "Bold initiatives",
@@ -79,14 +88,20 @@
         "reflection": {
             "content": "# The Path of Reflection\n\nYou've chosen to pause and look **inward**.\n\nThis path has brought you to a place of stillness.\n\nSometimes the most important journey is the one that happens within. Here, in the quiet, you find clarity.\n\n> \"In the silence between thoughts, wisdom emerges.\"\n\n**You have reached a moment of peace.**",
             "level": 2,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 480,
+                "y": 300
+            },
             "choices": [],
             "resources": []
         },
         "knowledge_theory": {
             "content": "# Theoretical Understanding\n\nYou prefer to build a **mental framework** first.\n\nTheory provides:\n\n- Structure for organizing ideas\n- Principles that guide application\n- A map before the journey\n\nUnderstanding the *why* before the *how* creates deeper learning.\n\n**Which theoretical approach resonates with you?**",
             "level": 3,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 130,
+                "y": 420
+            },
             "choices": [
                 {
                     "text": "Systematic analysis",
@@ -106,7 +121,10 @@
         "theory_systematic": {
             "content": "# Systematic Analysis\n\nYou approach knowledge through **methodical decomposition**.\n\nBreaking complex ideas into components:\n\n- Identify the parts\n- Understand relationships\n- Rebuild with clarity\n\nThe systematic mind finds order in chaos.\n\n**Your analytical skills sharpen.**",
             "level": 4,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 200,
+                "y": 540
+            },
             "choices": [],
             "resources": [
                 {
@@ -124,35 +142,50 @@
         "theory_intuitive": {
             "content": "# Intuitive Synthesis\n\nYou grasp knowledge through **holistic understanding**.\n\nSeeing the whole picture:\n\n- Patterns emerge naturally\n- Connections reveal themselves\n- Understanding flows\n\nThe intuitive mind sees forests, not just trees.\n\n**Your synthetic vision expands.**",
             "level": 4,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 340,
+                "y": 540
+            },
             "choices": [],
             "resources": []
         },
         "theory_critical": {
             "content": "# Critical Questioning\n\nYou deepen knowledge through **persistent inquiry**.\n\nThe power of questions:\n\n- Challenge assumptions\n- Expose hidden premises\n- Refine understanding\n\nThe critical mind accepts nothing without examination.\n\n**Your questioning spirit grows stronger.**",
             "level": 4,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 480,
+                "y": 540
+            },
             "choices": [],
             "resources": []
         },
         "knowledge_practice": {
             "content": "# Learning by Doing\n\nEven on the path of knowledge, you recognize that **experience is the best teacher**.\n\nPractical knowledge is:\n\n- Embodied, not just intellectual\n- Tested against reality\n- Refined through iteration\n\nThe hands remember what the mind forgets.\n\n**Your practical wisdom grows.**",
             "level": 3,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 270,
+                "y": 420
+            },
             "choices": [],
             "resources": []
         },
         "action_bold": {
             "content": "# Bold Action\n\nYou choose to move with **courage and conviction**.\n\nBold action means:\n\n- Accepting uncertainty\n- Learning from failures\n- Creating momentum\n\nFortune favors the bold, they say. But boldness is not recklessness; it's calculated courage.\n\n**Your bold spirit leads the way.**",
             "level": 3,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 410,
+                "y": 420
+            },
             "choices": [],
             "resources": []
         },
         "action_careful": {
             "content": "# Measured Steps\n\nYou choose to advance with **deliberation and care**.\n\nCareful action means:\n\n- Minimizing unnecessary risks\n- Building on solid foundations\n- Sustainable progress\n\nSlow and steady wins the race. Each small step compounds into great distance.\n\n**Your thoughtful approach bears fruit.**",
             "level": 3,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 550,
+                "y": 420
+            },
             "choices": [],
             "resources": []
         }
