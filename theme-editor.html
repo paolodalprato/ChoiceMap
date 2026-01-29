@@ -124,6 +124,7 @@
                 .btn-visited { background: ${theme.buttons.visitedBackground}; color: ${theme.buttons.visitedText}; }
                 .btn-explored { background: ${theme.buttons.exploredBackground}; color: ${theme.buttons.exploredText}; border: 2px solid ${theme.colors.accent}; }
                 .btn-restart { background: ${theme.buttons.restartBackground}; color: ${theme.buttons.restartText}; margin-top: 1rem; }
+                .btn-back { background: ${theme.buttons.backBackground}; color: ${theme.buttons.backText}; border-radius: 20px; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; }
                 .map-preview { background: ${theme.colors.background}; border: 1px solid ${theme.colors.border}; border-radius: 8px; padding: 1rem; margin-top: 1.5rem; }
                 .map-title { color: ${theme.colors.text}; font-size: 0.9rem; margin-bottom: 0.75rem; font-weight: 500; }
                 .resources { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid ${theme.colors.border}; }
@@ -162,6 +163,7 @@
                         <button class="btn btn-explored">Explored</button>
                     </div>
 
+                    <button class="btn btn-back">← Back</button>
                     <button class="btn btn-restart">Start Over</button>
 
                     <div class="map-preview">
@@ -440,6 +442,8 @@
                                     <ColorInput label="Explored Text" value={theme.buttons.exploredText} onChange={(v) => updateButton('exploredText', v)} />
                                     <ColorInput label="Restart Background" value={theme.buttons.restartBackground} onChange={(v) => updateButton('restartBackground', v)} />
                                     <ColorInput label="Restart Text" value={theme.buttons.restartText} onChange={(v) => updateButton('restartText', v)} />
+                                    <ColorInput label="Back Background" value={theme.buttons.backBackground} onChange={(v) => updateButton('backBackground', v)} />
+                                    <ColorInput label="Back Text" value={theme.buttons.backText} onChange={(v) => updateButton('backText', v)} />
                                 </div>
                             </div>
 

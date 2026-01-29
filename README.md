@@ -29,6 +29,7 @@ Then start a local server (see [Quick Start](#-quick-start) below).
 - **Google Fonts Support**: Choose from 9 font families including Inter, Roboto, Poppins
 - **Resource Attachments**: Add downloads, links, and videos to any node
 - **Progress Tracking**: Visual indicators for visited paths and current step
+- **Choice Reordering**: Move choices up/down with arrow buttons in the editor — no need to delete and recreate
 - **Backtracking**: Users can navigate back through their journey (via buttons; map jumps reset the path)
 - **No Build Process**: Single HTML files, works directly in browsers
 - **Fully Responsive**: Works on desktop and mobile devices
@@ -135,6 +136,7 @@ http://localhost:8000/scenario-editor.html
 - **Duplicate Target Prevention**: Nodes already linked by other choices are hidden from the target list
 - **Resizable Content Editor**: Drag the orange handle to expand the content textarea
 - **Live Preview**: Test your scenario directly from the editor
+- **Choice Reordering**: Reorder choices with ▲/▼ buttons — no need to delete and recreate them
 - **Resource Management**: Add downloads, links, and videos to any node
 
 ### Workflow
@@ -143,7 +145,7 @@ http://localhost:8000/scenario-editor.html
 2. Click **New Scenario** or **Open File** to load an existing JSON
 3. Click **Settings** to define scenario metadata (title, description, author)
 4. Select a node from the sidebar to edit it
-5. Add choices with **+ Add Choice**
+5. Add choices with **+ Add Choice** — reorder them with the ▲/▼ buttons
 6. Enter the **Button Text** first, then select a target node or use **+ Create new node...** to create a child node
 7. Click **Save** to download the updated JSON
 8. Copy the saved file to the project folder, replacing the old version
@@ -203,7 +205,7 @@ http://localhost:8000/theme-editor.html
 - **Live Preview**: See changes in real-time as you edit
 - **Company Branding**: Add logo, company name, and website URL
 - **Brand Display**: Logo and company name appear in the header (top right)
-- **Color Customization**: Customize all colors (background, text, buttons, map nodes)
+- **Color Customization**: Customize all colors (background, text, buttons including Back button, map nodes)
 - **Font Selection**: Choose from 9 font families (System Default + 8 Google Fonts)
 - **Import/Export**: Load and save theme files
 
@@ -240,7 +242,9 @@ http://localhost:8000/theme-editor.html
     },
     "buttons": {
         "choiceBackground": "#6366f1",
-        "visitedBackground": "#10b981"
+        "visitedBackground": "#10b981",
+        "backBackground": "#f97316",
+        "backText": "#ffffff"
     },
     "map": {
         "nodeCurrent": "#6366f1",

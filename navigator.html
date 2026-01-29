@@ -39,8 +39,8 @@
         .restart-button { background: var(--restart-bg); color: var(--restart-text); border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; margin-top: 1rem; }
         .restart-button:hover { transform: translateY(-2px); }
         .terminal-badge { display: inline-block; background: var(--success); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; margin-bottom: 1rem; }
-        .back-button { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary); padding: 0.5rem 1.25rem; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; z-index: 50; }
-        .back-button:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); border-color: var(--accent); color: var(--accent-hover); }
+        .back-button { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); background: var(--back-bg, #f97316); border: 1px solid var(--back-bg, #f97316); color: var(--back-text, #ffffff); padding: 0.5rem 1.25rem; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; z-index: 50; }
+        .back-button:hover { background: color-mix(in srgb, var(--back-bg, #f97316) 85%, black); border-color: color-mix(in srgb, var(--back-bg, #f97316) 85%, black); color: var(--back-text, #ffffff); }
         .back-button svg { width: 16px; height: 16px; }
         .resources-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
         .resources-title { color: var(--text); font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 800; }
@@ -117,6 +117,8 @@
             root.style.setProperty('--explored-text', b.exploredText);
             root.style.setProperty('--restart-bg', b.restartBackground);
             root.style.setProperty('--restart-text', b.restartText);
+            root.style.setProperty('--back-bg', b.backBackground);
+            root.style.setProperty('--back-text', b.backText);
             root.style.setProperty('--map-node-visited', m.nodeVisited);
             root.style.setProperty('--map-node-visited-text', m.nodeVisitedText);
             root.style.setProperty('--map-node-current', m.nodeCurrent);

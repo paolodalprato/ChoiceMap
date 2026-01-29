@@ -42,7 +42,9 @@
             "exploredBackground": "#4b5563",
             "exploredText": "#ffffff",
             "restartBackground": "#f59e0b",
-            "restartText": "#ffffff"
+            "restartText": "#ffffff",
+            "backBackground": "#f97316",
+            "backText": "#ffffff"
         },
         "map": {
             "nodeVisited": "#3730a3",

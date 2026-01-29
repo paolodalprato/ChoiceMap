@@ -627,7 +627,7 @@
         // ============================================================
         // CHOICE EDITOR COMPONENT
         // ============================================================
-        const ChoiceEditor = ({ choice, index, nodeIds, parentNodeId, nodes, startNode, siblingChoices, onChange, onRemove, onCreateNode }) => {
+        const ChoiceEditor = ({ choice, index, nodeIds, parentNodeId, nodes, startNode, siblingChoices, onChange, onRemove, onMoveUp, onMoveDown, isFirst, isLast, onCreateNode }) => {
             const [showCreate, setShowCreate] = useState(false);
             const [localText, setLocalText] = useState(choice.text || '');
             const [localTarget, setLocalTarget] = useState(choice.next || '');
@@ -727,7 +727,11 @@
                             {hasUnsavedChanges && <span style={{ color: '#f59e0b', marginLeft: '0.5rem', fontSize: '0.7rem' }}>● unsaved</span>}
                             {isComplete && !hasUnsavedChanges && <span style={{ color: '#10b981', marginLeft: '0.5rem', fontSize: '0.7rem' }}>✓</span>}
                         </span>
-                        <button className="btn btn-danger" onClick={onRemove} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>REMOVE</button>
+                        <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                            <button className="btn btn-secondary" onClick={onMoveUp} disabled={isFirst} style={{ padding: '0.15rem 0.4rem', fontSize: '0.75rem', opacity: isFirst ? 0.3 : 1, cursor: isFirst ? 'default' : 'pointer' }} title="Move up">▲</button>
+                            <button className="btn btn-secondary" onClick={onMoveDown} disabled={isLast} style={{ padding: '0.15rem 0.4rem', fontSize: '0.75rem', opacity: isLast ? 0.3 : 1, cursor: isLast ? 'default' : 'pointer' }} title="Move down">▼</button>
+                            <button className="btn btn-danger" onClick={onRemove} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>REMOVE</button>
+                        </div>
                     </div>
                     <div className="form-group">
                         <label className="form-label">
@@ -1011,6 +1015,8 @@
             const updateChoice = (i, c) => { const nc = [...(node.choices || [])]; nc[i] = c; onUpdateNode(nodeId, { ...node, choices: nc }); };
             const addChoice = () => onUpdateNode(nodeId, { ...node, choices: [...(node.choices || []), { text: '', next: '' }] });
             const removeChoice = (i) => onUpdateNode(nodeId, { ...node, choices: (node.choices || []).filter((_, idx) => idx !== i) });
+            const moveChoiceUp = (i) => { if (i <= 0) return; const nc = [...(node.choices || [])]; [nc[i - 1], nc[i]] = [nc[i], nc[i - 1]]; onUpdateNode(nodeId, { ...node, choices: nc }); };
+            const moveChoiceDown = (i) => { const nc = [...(node.choices || [])]; if (i >= nc.length - 1) return; [nc[i], nc[i + 1]] = [nc[i + 1], nc[i]]; onUpdateNode(nodeId, { ...node, choices: nc }); };
             const updateResource = (i, r) => { const nr = [...(node.resources || [])]; nr[i] = r; onUpdateNode(nodeId, { ...node, resources: nr }); };
             const addResource = () => onUpdateNode(nodeId, { ...node, resources: [...(node.resources || []), { type: 'link', label: '', url: '' }] });
             const removeResource = (i) => onUpdateNode(nodeId, { ...node, resources: (node.resources || []).filter((_, idx) => idx !== i) });
@@ -1080,7 +1086,7 @@
 
                     <div className="form-section">
                         <h3>🔀 Choices ({(node.choices || []).length})</h3>
-                        {(node.choices || []).map((choice, i) => <ChoiceEditor key={i} choice={choice} index={i} nodeIds={nodeIds} parentNodeId={nodeId} nodes={nodes} startNode={startNode} siblingChoices={node.choices || []} onChange={(c) => updateChoice(i, c)} onRemove={() => removeChoice(i)} onCreateNode={onCreateNode} />)}
+                        {(node.choices || []).map((choice, i) => <ChoiceEditor key={i} choice={choice} index={i} nodeIds={nodeIds} parentNodeId={nodeId} nodes={nodes} startNode={startNode} siblingChoices={node.choices || []} onChange={(c) => updateChoice(i, c)} onRemove={() => removeChoice(i)} onMoveUp={() => moveChoiceUp(i)} onMoveDown={() => moveChoiceDown(i)} isFirst={i === 0} isLast={i === (node.choices || []).length - 1} onCreateNode={onCreateNode} />)}
                         <button className="btn btn-success" onClick={addChoice}>+ Add Choice</button>
                         {(node.choices || []).length === 0 && <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.5rem', textAlign: 'center' }}>No choices = terminal node</p>}
                     </div>
