@@ -125,12 +125,15 @@ http://localhost:8000/scenario-editor.html
 
 - **Welcome Screen**: Start with a new scenario or open an existing file
 - **Node List View**: See all nodes with their level and status (START, END, orphan)
+- **Collapsible Sidebar**: Hide the node list to maximize editing space
 - **Visual Map View**: Interactive tree visualization of your scenario
 - **Manual Level Override**: Set explicit levels for nodes to control hierarchy and map positioning
 - **Inline Node Creation**: Create new nodes directly from the choice dropdown
 - **Choice Text Validation**: The editor requires button text when creating nodes (prevents invisible choices)
 - **Node Creation Validation**: Both Node ID and Node content are required when creating new nodes (prevents incomplete nodes)
 - **Self-Reference Prevention**: Nodes cannot connect to themselves in the Target Node dropdown (prevents circular loops)
+- **Duplicate Target Prevention**: Nodes already linked by other choices are hidden from the target list
+- **Resizable Content Editor**: Drag the orange handle to expand the content textarea
 - **Live Preview**: Test your scenario directly from the editor
 - **Resource Management**: Add downloads, links, and videos to any node
 

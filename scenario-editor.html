@@ -12,7 +12,11 @@
     <script src="shared-utils.js"></script>
     <style>
         /* Scenario Editor specific styles */
-        .sidebar { width: 280px; }
+        .sidebar { width: 280px; transition: width 0.3s ease, opacity 0.3s ease; }
+        .sidebar.collapsed { width: 0; overflow: hidden; opacity: 0; }
+        .sidebar-toggle { position: absolute; left: 280px; top: 50%; transform: translateY(-50%); z-index: 100; background: #f97316; color: white; border: none; border-radius: 0 6px 6px 0; padding: 0.75rem 0.25rem; cursor: pointer; transition: left 0.3s ease; }
+        .sidebar-toggle:hover { background: #ea580c; }
+        .sidebar-toggle.collapsed { left: 0; }
         .node-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
         .node-item { padding: 0.75rem; margin-bottom: 0.5rem; background: #ffffff; border-radius: 8px; cursor: pointer; border: 2px solid #e5e7eb; transition: all 0.2s; }
         .node-item:hover { border-color: #9ca3af; }
@@ -34,6 +38,27 @@
         .form-section .form-group { margin-bottom: 1rem; }
         .form-section .form-label { font-size: 0.8rem; margin-bottom: 0.4rem; }
         .form-section .form-input { padding: 0.6rem 0.75rem; font-size: 0.9rem; }
+        .form-textarea { resize: none; min-height: 120px; }
+        .textarea-container { position: relative; }
+        .resize-handle { 
+            width: 100%; 
+            height: 24px; 
+            background: #f97316; 
+            border-radius: 0 0 6px 6px; 
+            cursor: ns-resize; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            user-select: none;
+        }
+        .resize-handle:hover { background: #ea580c; }
+        .resize-handle::before {
+            content: '';
+            width: 40px;
+            height: 4px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 2px;
+        }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .form-row.single { grid-template-columns: 1fr; }
         .choice-item, .resource-item { background: #ffffff; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #e5e7eb; transition: border-color 0.2s, box-shadow 0.2s; }
@@ -908,6 +933,65 @@
         // ============================================================
         // NODE EDITOR COMPONENT
         // ============================================================
+        // ============================================================
+        // RESIZABLE TEXTAREA COMPONENT
+        // ============================================================
+        const ResizableTextarea = ({ value, onChange, placeholder, minHeight = 120 }) => {
+            const [height, setHeight] = useState(minHeight);
+            const containerRef = useRef(null);
+            const isDragging = useRef(false);
+            const startY = useRef(0);
+            const startHeight = useRef(0);
+
+            const handleMouseDown = (e) => {
+                isDragging.current = true;
+                startY.current = e.clientY;
+                startHeight.current = height;
+                document.body.style.cursor = 'ns-resize';
+                document.body.style.userSelect = 'none';
+            };
+
+            useEffect(() => {
+                const handleMouseMove = (e) => {
+                    if (!isDragging.current) return;
+                    const delta = e.clientY - startY.current;
+                    const newHeight = Math.max(minHeight, startHeight.current + delta);
+                    setHeight(newHeight);
+                };
+
+                const handleMouseUp = () => {
+                    if (isDragging.current) {
+                        isDragging.current = false;
+                        document.body.style.cursor = '';
+                        document.body.style.userSelect = '';
+                    }
+                };
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                return () => {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+            }, [minHeight]);
+
+            return (
+                <div className="textarea-container" ref={containerRef}>
+                    <textarea 
+                        className="form-input form-textarea" 
+                        style={{ height: `${height}px`, borderRadius: '6px 6px 0 0' }}
+                        value={value} 
+                        onChange={onChange} 
+                        placeholder={placeholder}
+                    />
+                    <div className="resize-handle" onMouseDown={handleMouseDown} title="Drag to resize" />
+                </div>
+            );
+        };
+
+        // ============================================================
+        // NODE EDITOR COMPONENT
+        // ============================================================
         const NodeEditor = ({ nodeId, node, nodeIds, nodes, startNode, onUpdateNode, onDeleteNode, onRenameNode, onCreateNode }) => {
             const [newNodeId, setNewNodeId] = useState(nodeId);
             const [showRename, setShowRename] = useState(false);
@@ -951,7 +1035,7 @@
                         <h3>📝 Content</h3>
                         <div className="form-group">
                             <label className="form-label">Content - Markdown</label>
-                            <textarea className="form-input form-textarea" value={node.content || ''} onChange={(e) => updateContent(e.target.value)} placeholder="# Title&#10;&#10;Content..." />
+                            <ResizableTextarea value={node.content || ''} onChange={(e) => updateContent(e.target.value)} placeholder="# Title&#10;&#10;Content..." />
                         </div>
                     </div>
 
@@ -1062,6 +1146,7 @@
             const [hasChanges, setHasChanges] = useState(false);
             const [showMetaEditor, setShowMetaEditor] = useState(false);
             const [showMap, setShowMap] = useState(false);
+            const [showSidebar, setShowSidebar] = useState(true);
             const [fileName, setFileName] = useState(null);
             const [layoutLoaded, setLayoutLoaded] = useState(false);
             const fileInputRef = useRef(null);
@@ -1179,7 +1264,14 @@
             
             return (
                 <div className="editor-container">
-                    <div className="sidebar">
+                    <button 
+                        className={`sidebar-toggle ${!showSidebar ? 'collapsed' : ''}`}
+                        onClick={() => setShowSidebar(!showSidebar)}
+                        title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
+                    >
+                        {showSidebar ? '◀' : '▶'}
+                    </button>
+                    <div className={`sidebar ${!showSidebar ? 'collapsed' : ''}`}>
                         <div className="sidebar-header">
                             <h1>Scenario Editor</h1>
                             <div className="sidebar-actions">
