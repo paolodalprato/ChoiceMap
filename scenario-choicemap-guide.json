@@ -1,0 +1,315 @@
+{
+    "meta": {
+        "title": "ChoiceMap Structure",
+        "description": "An interactive guide to understand the ChoiceMap framework",
+        "author": "Paolo Dalprato"
+    },
+    "translations": {
+        "step": "Step",
+        "restart": "Start Over",
+        "endOfPath": "End of this section",
+        "resources": "Resources",
+        "viewMap": "View Map",
+        "mapOf": "Map of",
+        "back": "Back",
+        "download": "Download",
+        "openLink": "Open",
+        "watchVideo": "Watch"
+    },
+    "startNode": "start",
+    "nodes": {
+        "start": {
+            "content": "# ChoiceMap\n\nChoiceMap is a **zero-build framework** for creating interactive decision trees and guided experiences.\nJust **HTML**, **CSS**, and **JSON** files that work directly in your browser.\n## Key Features\n\n- **Zero-build**: Works directly in the browser\n- **No server needed**: Can be hosted on any static hosting\n- **Themeable**: Full control over colors, fonts, and branding\n- **Visual editing**: Drag-and-drop node positioning (in Admin mode)\n- **Markdown support**: Rich content with simple syntax\n\n> Perfect for documentation, tutorials, onboarding flows, and interactive guides.\n\n**What would you like to explore?**",
+            "level": 1,
+            "position": {
+                "x": 812,
+                "y": 112
+            },
+            "choices": [
+                {
+                    "text": "Use Cases",
+                    "next": "use_cases"
+                },
+                {
+                    "text": "The Components",
+                    "next": "components"
+                },
+                {
+                    "text": "Roles",
+                    "next": "start_profile"
+                },
+                {
+                    "text": "File Structure",
+                    "next": "files"
+                },
+                {
+                    "text": "Quick Start",
+                    "next": "quickstart"
+                }
+            ],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "The Complete Manual - web and PDF version",
+                    "url": "https://docs.ai-know.pro/choicemap-en/"
+                }
+            ]
+        },
+        "use_cases": {
+            "content": "# Use Cases\n\nChoiceMap is ideal for:\n\n## Documentation\n- Troubleshooting guides\n- Decision flowcharts\n- FAQ with branching logic\n\n## Training & Onboarding\n- Step-by-step tutorials\n- Interactive learning paths\n- Role-based onboarding\n\n## Business Processes\n- Eligibility checkers\n- Product selectors\n- Compliance workflows\n\n> Each path can include resources like PDFs, videos, and external links.",
+            "level": 2,
+            "position": {
+                "x": 168,
+                "y": 286
+            },
+            "choices": [],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "Application Examples",
+                    "url": "https://docs.ai-know.pro/choicemap-en/overview/#typical-use-cases"
+                }
+            ]
+        },
+        "components": {
+            "content": "# The Three Components\n\nChoiceMap consists of three main tools:\n\n## 1. Navigator\nThe end-user interface that displays your scenario\n\n## 2. Scenario Editor\nVisual tool for creating and editing scenarios\n\n## 3. Theme Editor\nCustomize colors, fonts, and branding\n\n**Which component would you like to learn about?**",
+            "level": 2,
+            "position": {
+                "x": 548,
+                "y": 284
+            },
+            "choices": [
+                {
+                    "text": "Navigator",
+                    "next": "comp_navigator"
+                },
+                {
+                    "text": "Scenario Editor",
+                    "next": "comp_editor"
+                },
+                {
+                    "text": "Theme Editor",
+                    "next": "comp_theme"
+                }
+            ],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "Overview of Three Components",
+                    "url": "https://docs.ai-know.pro/choicemap-en/overview/"
+                }
+            ]
+        },
+        "comp_navigator": {
+            "content": "# The Navigator\n\n**File:** `navigator.html`\n\nThis is what your users see. It renders the scenario as an interactive experience, through a card/map experience.\n\n## Card Navigation\n\n- **Markdown rendering**: Headers, lists, quotes, bold, italic\n- **Choice buttons**: Navigate between nodes\n- **Progress tracking**: Shows visited paths\n- **Resources**: Links, downloads, videos per node\n- **Theming**: Fully customizable appearance\n\n## Map Navigation\n\n- **Double click** nodes to jump to them\n- **Color Codes**: current, visited, unvisited nodes\n- **Path Taken**: show the path already visited",
+            "level": 3,
+            "position": {
+                "x": 315,
+                "y": 420
+            },
+            "choices": [],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "Navigator Tutorial",
+                    "url": "https://docs.ai-know.pro/choicemap-en/navigator-interface/"
+                }
+            ]
+        },
+        "comp_editor": {
+            "content": "# The Scenario Editor\n\n**File:** `scenario-editor.html`\n\nVisual tool for creating and editing scenarios, through a card/map experience.\n\n## Card Navigation\n\n- **Node list**: See all nodes at a glance\n- **Content editing**: Markdown with live preview\n- **Choice management**: Add/remove choices, link to nodes\n- **Resource attachments**: Links, downloads, videos\n- **Level control**: Set explicit levels for proper map layout\n- **Settings** definition\n\n## Map Navigation\n- **Double click** nodes to jump to them\n- **CTRL+drag** to reposition nodes\n- **SHIFT+click** to select nodes and start *Node repositioning* mode\n- **Snap to grid** always active moving nodes",
+            "level": 3,
+            "position": {
+                "x": 462,
+                "y": 420
+            },
+            "choices": [],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "Scenario Tutorial",
+                    "url": "https://docs.ai-know.pro/choicemap-en/scenario-editor-interface/"
+                }
+            ]
+        },
+        "comp_theme": {
+            "content": "# The Theme Editor\n\n**File:** `theme-editor.html`\n\nCustomize the visual appearance of your navigator.\n\n## Customizable Elements\n\n- **Brand**: Logo, company name, website link\n- **Typography**: Font family selection\n- **Colors**: Background, text, accents, borders\n- **Buttons**: Choice, visited, restart states\n- **Map**: Node and connection colors\n\n## Live Preview\n\nChanges are reflected in real-time in the preview panel.\n\n## Output\n\nSaves to json file theme loaded by the navigator.",
+            "level": 3,
+            "position": {
+                "x": 603,
+                "y": 420
+            },
+            "choices": [],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "Theme Tutorial",
+                    "url": "https://docs.ai-know.pro/choicemap-en/theme-editor-interface/"
+                }
+            ]
+        },
+        "files": {
+            "content": "# File structure\n\nChoiceMap uses simple JSON files for configuration.\n\n## Core Files\n\n- **HTML files**: Framework interfaces (navigator, editors) - do not modify\n- **config.json** is the director, it links the html files to the scenario and theme files\n- **scenario.json** scenario content and structure\n- **theme.json** visual customization\n- **defaults.json** System defaults (layout parameters, font options, default theme)\n- **shared-styles.css** common styles shared across the editor interfaces\n- **shared-utils.js** shared JavaScript utilities used across all three tools.",
+            "level": 2,
+            "position": {
+                "x": 1275,
+                "y": 283
+            },
+            "choices": [
+                {
+                    "text": "config.json",
+                    "next": "file_config"
+                },
+                {
+                    "text": "Scenario Structure",
+                    "next": "file_scenario"
+                },
+                {
+                    "text": "theme.json",
+                    "next": "file_theme"
+                },
+                {
+                    "text": "shared-styles.css",
+                    "next": "files_shared_styles"
+                },
+                {
+                    "text": "shared-utils.js",
+                    "next": "files_shared_utils"
+                }
+            ],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "File Architecture of ChoiceMap",
+                    "url": "https://docs.ai-know.pro/choicemap-en/content-structure/"
+                }
+            ]
+        },
+        "file_config": {
+            "content": "# config.json\n\nThe entry point that tells the navigator which files to load.\n\n```json\n{\n    \"scenario\": \"my-scenario.json\",\n    \"theme\": \"my-theme.json\",\n    \"showCredits\": true\n}\n```\n\n## Fields\n\n- **scenario**: Path to your scenario JSON file\n- **theme**: Path to your theme JSON file\n- **showCredits**: Show/hide ChoiceMap branding in the Navigator footer\n\n> This allows you to have multiple scenarios and switch between them easily.",
+            "level": 3,
+            "position": {
+                "x": 1168,
+                "y": 420
+            },
+            "choices": [],
+            "resources": []
+        },
+        "file_scenario": {
+            "content": "# Scenario Structure\n\nA scenario file contains:\n\n## Meta\nTitle, description, author\n\n## Translations\nUI labels (customizable per language)\n\n## StartNode\nThe entry point node ID\n\n## Nodes\nA map of node objects, each with:\n\n- **content**: Markdown text\n- **level**: Vertical position in map\n- **position**: x,y coordinates\n- **choices**: Array of {text, next}\n- **resources**: Array of {type, label, url}\n\n**Want to see the node structure in detail?**",
+            "level": 3,
+            "position": {
+                "x": 1334,
+                "y": 420
+            },
+            "choices": [
+                {
+                    "text": "Node Details",
+                    "next": "node_structure"
+                }
+            ],
+            "resources": []
+        },
+        "node_structure": {
+            "content": "# Node Structure\n\n```json\n{\n    \"my_node\": {\n        \"content\": \"# Title\\n\\nMarkdown content...\",\n        \"level\": 2,\n        \"position\": { \"x\": 300, \"y\": 200 },\n        \"choices\": [\n            { \"text\": \"Option A\", \"next\": \"node_a\" },\n            { \"text\": \"Option B\", \"next\": \"node_b\" }\n        ],\n        \"resources\": [\n            {\n                \"type\": \"link\",\n                \"label\": \"Learn more\",\n                \"url\": \"https://example.com\"\n            }\n        ]\n    }\n}\n```\n\n## Resource Types\n\n- **link**: External URL (opens in new tab)\n- **download**: Downloadable file\n- **video**: Video link",
+            "level": 4,
+            "position": {
+                "x": 1340,
+                "y": 620
+            },
+            "choices": [],
+            "resources": []
+        },
+        "file_theme": {
+            "content": "# theme.json\n\nControls the visual appearance.\n\n## Sections\n\n### Brand\n```json\n\"brand\": {\n    \"name\": \"My Company\",\n    \"logo\": \"path/to/logo.png\",\n    \"website\": \"https://mysite.com\"\n}\n```\n\n### Colors\nBackground, text, accent, borders...\n\n### Buttons\nChoice, visited, restart states\n\n### Map\nNode and connection colors\n\n> Use the Theme Editor for visual editing with live preview.",
+            "level": 3,
+            "position": {
+                "x": 1526,
+                "y": 420
+            },
+            "choices": [],
+            "resources": []
+        },
+        "quickstart": {
+            "content": "# Quick Start\n\nGet started in 5 steps:\n\n## 1. Open Scenario Editor\nOpen `scenario-editor.html` in your browser\n\n## 2. For each node\n- Create content with Markdown editor\n- Link them with choices\n- Add attachments, if any\n- Position on the map\n\n## 3. Save Your Scenario\nDownload as `my-scenario.json`\n\n## 4. Configure\nEdit `config.json` to point to your scenario\n\n## 5. Open Navigator\nOpen `navigator.html` to see your creation!\n\n> Optional: Use Theme Editor to customize colors and branding.",
+            "level": 2,
+            "position": {
+                "x": 1570,
+                "y": 283
+            },
+            "choices": [],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "Quick Reference",
+                    "url": "https://docs.ai-know.pro/choicemap-en/quick-reference/"
+                }
+            ]
+        },
+        "start_profile": {
+            "content": "# Roles\n## The system is designed for two user profiles:\n\n- **User**: the basic profile\n- **Administrator**:   the management profile",
+            "level": 2,
+            "position": {
+                "x": 853,
+                "y": 281
+            },
+            "choices": [
+                {
+                    "text": "User profile",
+                    "next": "profile_user"
+                },
+                {
+                    "text": "Administrator",
+                    "next": "profile_administrator"
+                }
+            ],
+            "resources": [
+                {
+                    "type": "link",
+                    "label": "Roles and responsabilities",
+                    "url": "https://docs.ai-know.pro/choicemap-en/publication/#roles-and-responsibilities"
+                }
+            ]
+        },
+        "profile_user": {
+            "content": "# User Profile\n\n- Uses only the Navigator\n- Navigates through scenarios created by administrators\n- Cannot change anything",
+            "level": 3,
+            "position": {
+                "x": 778,
+                "y": 420
+            },
+            "choices": [],
+            "resources": []
+        },
+        "profile_administrator": {
+            "content": "# Administrator Profile\n\n- Can use Navigator, Scenario Editor and Theme Editor\n- Responsible for building the scenarios and defining graphic themes\n- Distributes and makes scenarios accessible to users",
+            "level": 3,
+            "position": {
+                "x": 920,
+                "y": 420
+            },
+            "choices": [],
+            "resources": []
+        },
+        "files_shared_styles": {
+            "content": "#  shared-styles.css\n\n```\n/* ============================================================\n   SHARED STYLES - ChoiceMap\n   Common styles used across scenario-editor and theme-editor\n   ============================================================ */\n\n/* ============================================================\n   BASE RESET & TYPOGRAPHY\n   ============================================================ */\n* {\n    box-sizing: border-box;\n}\n\nbody {\n    margin: 0;\n    padding: 0;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n    background: #ffffff;\n    color: #1f2937;\n    min-height: 100vh;\n}\n\n/* ============================================================\n   LAYOUT\n   ============================================================ */\n.editor-container {\n    display: flex;\n    height: 100vh;\n    position: relative;\n}\n\n.sidebar {\n    background: #f9fafb;\n    border-right: 1px solid #e5e7eb;\n    display: flex;\n    flex-direction: column;\n    flex-shrink: 0;\n}\n\n.sidebar-header {\n    padding: 1rem;\n    border-bottom: 1px solid #e5e7eb;\n}\n\n.sidebar-header h1 {\n    font-size: 1.25rem;\n    margin: 0 0 0.5rem 0;\n    color: #111827;\n}\n\n.sidebar-actions {\n    display: flex;\n    gap: 0.5rem;\n    flex-wrap: wrap;\n}\n```",
+            "level": 3,
+            "position": {
+                "x": 1440,
+                "y": 480
+            },
+            "choices": [],
+            "resources": []
+        },
+        "files_shared_utils": {
+            "content": "# shared-utils.js\n\n```\n/**\n * ChoiceMap Shared Utilities\n * Common functions used across scenario-editor, navigator, and theme-editor\n */\n\n(function(global) {\n    'use strict';\n\n    // ============================================================\n    // CONSTANTS\n    // ============================================================\n\n    const RESOURCE_TYPES = {\n        LINK: 'link',\n        DOWNLOAD: 'download',\n        VIDEO: 'video'\n    };\n\n    const RESOURCE_ICONS = {\n        link: '🔗',\n        download: '📥',\n        video: '▶️'\n    };\n\n    const RESOURCE_LABELS = {\n        link: 'Open',\n        download: 'Download',\n        video: 'Watch'\n    };\n\n    // ============================================================\n    // INPUT SANITIZATION\n    // ============================================================\n\n    /**\n     * Sanitize a URL to prevent XSS attacks\n     * @param {string} url - The URL to sanitize\n     * @returns {string} - Sanitized URL or empty string if invalid\n     */\n    function sanitizeUrl(url) {\n        if (!url || typeof url !== 'string') return '';\n\n        const trimmed = url.trim();\n\n        // Block javascript: and data: URLs (except safe data: images)\n        const lowerUrl = trimmed.toLowerCase();\n        if (lowerUrl.startsWith('javascript:')) return '';\n        if (lowerUrl.startsWith('data:') && !lowerUrl.startsWith('data:image/')) return '';\n```",
+            "level": 3,
+            "position": {
+                "x": 1240,
+                "y": 480
+            },
+            "choices": [],
+            "resources": []
+        }
+    }
+}

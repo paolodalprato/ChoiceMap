@@ -104,9 +104,10 @@
         const levels = {};
         const visited = new Set();
         const queue = [{ id: startNode, level: 1 }];
+        let qi = 0;
 
-        while (queue.length > 0) {
-            const { id, level } = queue.shift();
+        while (qi < queue.length) {
+            const { id, level } = queue[qi++];
             if (visited.has(id) || !nodes[id]) continue;
 
             visited.add(id);
@@ -136,9 +137,10 @@
      * @param {string} nodeId - The node ID
      * @param {Object} nodes - Map of nodeId to node data
      * @param {string} startNode - ID of the starting node
+     * @param {Object} [levelsMap] - Pre-calculated levels from calculateNodeLevels (avoids redundant BFS)
      * @returns {number} - The effective level (0 for orphans)
      */
-    function getEffectiveLevel(nodeId, nodes, startNode) {
+    function getEffectiveLevel(nodeId, nodes, startNode, levelsMap) {
         // If node has explicit level, use it
         if (nodes[nodeId]?.level !== undefined &&
             nodes[nodeId]?.level !== null &&
@@ -146,8 +148,8 @@
             return parseInt(nodes[nodeId].level);
         }
 
-        // Otherwise calculate via BFS
-        const levels = calculateNodeLevels(nodes, startNode);
+        // Use pre-calculated levels if provided, otherwise calculate via BFS
+        const levels = levelsMap || calculateNodeLevels(nodes, startNode);
         for (const [level, nodeIds] of Object.entries(levels)) {
             if (nodeIds.includes(nodeId)) return parseInt(level);
         }
@@ -162,12 +164,23 @@
      * @param {string} startNode - ID of the starting node
      * @returns {Object} - { level: number, position: number }
      */
-    function getNodeLevel(nodeId, nodes, startNode) {
-        const effectiveLevel = getEffectiveLevel(nodeId, nodes, startNode);
+    function getNodeLevel(nodeId, nodes, startNode, levelsMap) {
+        if (levelsMap) {
+            // Direct lookup from pre-calculated levels map
+            for (const [level, nodeIds] of Object.entries(levelsMap)) {
+                const idx = nodeIds.indexOf(nodeId);
+                if (idx !== -1) return { level: parseInt(level), position: idx + 1 };
+            }
+            return { level: 0, position: 1 };
+        }
+
+        // Calculate BFS levels once to avoid N redundant BFS traversals
+        const calculatedLevels = calculateNodeLevels(nodes, startNode);
+        const effectiveLevel = getEffectiveLevel(nodeId, nodes, startNode, calculatedLevels);
 
         // Calculate position among nodes at same effective level
         const nodesAtSameLevel = Object.keys(nodes).filter(
-            id => getEffectiveLevel(id, nodes, startNode) === effectiveLevel
+            id => getEffectiveLevel(id, nodes, startNode, calculatedLevels) === effectiveLevel
         );
         const position = nodesAtSameLevel.indexOf(nodeId) + 1;
 
@@ -193,10 +206,13 @@
         const { levelHeight, nodeWidth, padding } = config;
         const positions = {};
 
+        // Calculate BFS levels once, reuse for all nodes
+        const levelsMap = calculateNodeLevels(nodes, startNode);
+
         // Group nodes by their effective level
         const levelGroups = {};
         Object.keys(nodes).forEach(nodeId => {
-            const effectiveLevel = getEffectiveLevel(nodeId, nodes, startNode);
+            const effectiveLevel = getEffectiveLevel(nodeId, nodes, startNode, levelsMap);
             if (!levelGroups[effectiveLevel]) levelGroups[effectiveLevel] = [];
             levelGroups[effectiveLevel].push(nodeId);
         });
@@ -222,6 +238,72 @@
         });
 
         return { positions, maxWidth, maxLevel };
+    }
+
+    // ============================================================
+    // MAP CONNECTION UTILITIES
+    // ============================================================
+
+    /**
+     * Generate SVG path for a connection between two nodes
+     * @param {Object} conn - Connection object with from, to, isLoop, isSameLevel
+     * @param {number} nodeHeight - Height of nodes in the map
+     * @returns {Object} - { path, type, x1, y1, x2, y2, [cx, cy] }
+     */
+    function getConnectionPath(conn, nodeHeight) {
+        const x1 = conn.from.x;
+        const y1 = conn.from.y + nodeHeight / 2;
+        const x2 = conn.to.x;
+        const y2 = conn.to.y - nodeHeight / 2;
+
+        // Forward connection - straight line
+        if (!conn.isLoop && !conn.isSameLevel) {
+            return { path: 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2, type: 'line', x1: x1, y1: y1, x2: x2, y2: y2 };
+        }
+
+        // Loop or same level - curved arc
+        var midX = (x1 + x2) / 2;
+        var midY = (y1 + y2) / 2;
+        var visuallyBackward = conn.to.y < conn.from.y;
+        var curveOffset = conn.isLoop
+            ? Math.max(80, Math.abs(conn.from.y - conn.to.y) * 0.3 + 60)
+            : 50;
+        var curveDirection = x1 <= x2 ? 1 : -1;
+        var controlX = midX + (curveOffset * curveDirection * (conn.isLoop ? 1.5 : 1));
+        var controlY = visuallyBackward ? Math.min(y1, y2) - 30 : midY;
+
+        return { path: 'M ' + x1 + ' ' + y1 + ' Q ' + controlX + ' ' + controlY + ' ' + x2 + ' ' + y2, type: 'bezier', x1: x1, y1: y1, x2: x2, y2: y2, cx: controlX, cy: controlY };
+    }
+
+    /**
+     * Calculate midpoint and angle for arrow placement on a path
+     * @param {Object} pathData - Path data from getConnectionPath
+     * @returns {Object} - { x, y, angle }
+     */
+    function getArrowPosition(pathData) {
+        if (pathData.type === 'line') {
+            var mx = (pathData.x1 + pathData.x2) / 2;
+            var my = (pathData.y1 + pathData.y2) / 2;
+            return { x: mx, y: my, angle: Math.atan2(pathData.y2 - pathData.y1, pathData.x2 - pathData.x1) * 180 / Math.PI };
+        }
+        var t = 0.5;
+        var bx = (1 - t) * (1 - t) * pathData.x1 + 2 * (1 - t) * t * pathData.cx + t * t * pathData.x2;
+        var by = (1 - t) * (1 - t) * pathData.y1 + 2 * (1 - t) * t * pathData.cy + t * t * pathData.y2;
+        var tx = 2 * (1 - t) * (pathData.cx - pathData.x1) + 2 * t * (pathData.x2 - pathData.cx);
+        var ty = 2 * (1 - t) * (pathData.cy - pathData.y1) + 2 * t * (pathData.y2 - pathData.cy);
+        return { x: bx, y: by, angle: Math.atan2(ty, tx) * 180 / Math.PI };
+    }
+
+    /**
+     * Get connection color based on structure (loop, same level, forward)
+     * @param {Object} conn - Connection with isLoop, isSameLevel, visited flags
+     * @returns {string} - CSS color value
+     */
+    function getConnectionColor(conn) {
+        if (conn.isLoop) return '#f59e0b';
+        if (conn.isSameLevel) return '#8b5cf6';
+        if (conn.visited) return 'var(--map-line-visited)';
+        return '#d1d5db';
     }
 
     // ============================================================
@@ -298,6 +380,11 @@
         getEffectiveLevel,
         getNodeLevel,
         calculateAutoPositions,
+
+        // Map connection utilities
+        getConnectionPath,
+        getArrowPosition,
+        getConnectionColor,
 
         // Components
         ErrorBoundary

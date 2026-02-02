@@ -17,7 +17,7 @@ In your scenario JSON, reference files like this:
 ```json
 {
     "type": "download",
-    "label": { "en": "Analysis Template", "it": "Template di analisi" },
+    "label": "Analysis Template",
     "url": "docs/analysis-template.pdf"
 }
 ```

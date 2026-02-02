@@ -39,8 +39,7 @@
             "choiceText": "#ffffff",
             "visitedBackground": "#10b981",
             "visitedText": "#ffffff",
-            "exploredBackground": "#4b5563",
-            "exploredText": "#ffffff",
+
             "restartBackground": "#f59e0b",
             "restartText": "#ffffff",
             "backBackground": "#f97316",

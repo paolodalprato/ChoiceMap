@@ -1,5 +1,5 @@
 {
-    "scenario": "scenario-sample.json",
-    "theme": "theme.json",
+    "scenario": "scenario-choicemap-guide.json",
+    "theme": "theme_choicemap.json",
     "showCredits": true
 }

@@ -259,6 +259,36 @@ body {
     display: none;
 }
 
+.text-error {
+    color: #ef4444;
+}
+
+.text-success {
+    color: #10b981;
+}
+
+.text-warning {
+    color: #f59e0b;
+}
+
+.text-muted {
+    color: #6b7280;
+}
+
+.required-star {
+    color: #ef4444;
+}
+
+.input-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.status-indicator {
+    margin-left: 0.5rem;
+    font-size: 0.7rem;
+}
+
 /* ============================================================
    ERROR BOUNDARY
    ============================================================ */

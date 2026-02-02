@@ -70,7 +70,7 @@
         // ============================================================
         // PREVIEW COMPONENT
         // ============================================================
-        const Preview = ({ theme }) => {
+        const Preview = ({ theme, fileName }) => {
             const fontKey = theme.typography?.fontFamily || 'system';
             const font = fontOptions[fontKey] || fontOptions['system'];
             const googleFontLink = font.google
@@ -105,11 +105,9 @@
                 .brand a { color: ${theme.colors.text}; text-decoration: none; }
                 .brand a:hover { color: ${theme.colors.accent}; }
                 .scenario-title {
-                    position: fixed;
-                    top: 0.75rem;
-                    left: 1rem;
                     color: ${theme.colors.text};
                     font-weight: 500;
+                    margin-bottom: 1rem;
                 }
                 .progress {
                     position: fixed;
@@ -122,7 +120,7 @@
                 .btn { padding: 0.75rem 1.25rem; border-radius: 10px; border: none; cursor: pointer; font-size: 0.9rem; }
                 .btn-choice { background: ${theme.buttons.choiceBackground}; color: ${theme.buttons.choiceText}; }
                 .btn-visited { background: ${theme.buttons.visitedBackground}; color: ${theme.buttons.visitedText}; }
-                .btn-explored { background: ${theme.buttons.exploredBackground}; color: ${theme.buttons.exploredText}; border: 2px solid ${theme.colors.accent}; }
+
                 .btn-restart { background: ${theme.buttons.restartBackground}; color: ${theme.buttons.restartText}; margin-top: 1rem; }
                 .btn-back { background: ${theme.buttons.backBackground}; color: ${theme.buttons.backText}; border-radius: 20px; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem; }
                 .map-preview { background: ${theme.colors.background}; border: 1px solid ${theme.colors.border}; border-radius: 8px; padding: 1rem; margin-top: 1.5rem; }
@@ -140,7 +138,7 @@
                     <style>${previewStyles}</style>
                 </head>
                 <body>
-                    <div class="scenario-title">Sample Scenario</div>
+                    <div class="scenario-title">${fileName.replace(/\.json$/i, '')}</div>
                     ${hasBrand ? `
                         <div class="brand">
                             ${theme.brand.logo ? (theme.brand.website
@@ -160,7 +158,6 @@
                     <div class="choices">
                         <button class="btn btn-choice">Choice A</button>
                         <button class="btn btn-visited">Visited ✓</button>
-                        <button class="btn btn-explored">Explored</button>
                     </div>
 
                     <button class="btn btn-back">← Back</button>
@@ -438,8 +435,7 @@
                                     <ColorInput label="Choice Text" value={theme.buttons.choiceText} onChange={(v) => updateButton('choiceText', v)} />
                                     <ColorInput label="Visited Background" value={theme.buttons.visitedBackground} onChange={(v) => updateButton('visitedBackground', v)} />
                                     <ColorInput label="Visited Text" value={theme.buttons.visitedText} onChange={(v) => updateButton('visitedText', v)} />
-                                    <ColorInput label="Explored Background" value={theme.buttons.exploredBackground} onChange={(v) => updateButton('exploredBackground', v)} />
-                                    <ColorInput label="Explored Text" value={theme.buttons.exploredText} onChange={(v) => updateButton('exploredText', v)} />
+
                                     <ColorInput label="Restart Background" value={theme.buttons.restartBackground} onChange={(v) => updateButton('restartBackground', v)} />
                                     <ColorInput label="Restart Text" value={theme.buttons.restartText} onChange={(v) => updateButton('restartText', v)} />
                                     <ColorInput label="Back Background" value={theme.buttons.backBackground} onChange={(v) => updateButton('backBackground', v)} />
@@ -471,7 +467,7 @@
                             <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>Changes are reflected in real-time</span>
                         </div>
                         <div className="preview-content">
-                            <Preview theme={theme} />
+                            <Preview theme={theme} fileName={fileName} />
                         </div>
                         <div className="status-bar">
                             <span className={hasChanges ? 'status-unsaved' : 'status-saved'}>

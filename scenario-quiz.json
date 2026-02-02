@@ -21,94 +21,187 @@
         "start": {
             "content": "# Project Management Quiz\n\nWelcome! This quiz will test your understanding of project management basics.\n\n**Question 1 of 3**\n\nWhat is the primary purpose of a project charter?",
             "level": 1,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 270,
+                "y": 180
+            },
             "choices": [
-                { "text": "To formally authorize the project", "next": "q1_correct" },
-                { "text": "To list all project tasks", "next": "q1_wrong_tasks" },
-                { "text": "To define the project budget", "next": "q1_wrong_budget" }
+                {
+                    "text": "To formally authorize the project",
+                    "next": "q1_correct"
+                },
+                {
+                    "text": "To list all project tasks",
+                    "next": "q1_wrong_tasks"
+                },
+                {
+                    "text": "To define the project budget",
+                    "next": "q1_wrong_budget"
+                }
             ],
             "resources": []
         },
         "q1_correct": {
             "content": "# Correct!\n\nThe project charter formally authorizes the project and gives the project manager authority to use organizational resources.\n\n**Question 2 of 3**\n\nWhat does the \"triple constraint\" in project management refer to?",
             "level": 2,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 130,
+                "y": 300
+            },
             "choices": [
-                { "text": "Scope, Time, Cost", "next": "q2_correct" },
-                { "text": "People, Process, Technology", "next": "q2_wrong" },
-                { "text": "Plan, Do, Check", "next": "q2_wrong" }
+                {
+                    "text": "Scope, Time, Cost",
+                    "next": "q2_correct"
+                },
+                {
+                    "text": "People, Process, Technology",
+                    "next": "q2_wrong"
+                },
+                {
+                    "text": "Plan, Do, Check",
+                    "next": "q2_wrong"
+                }
             ],
             "resources": []
         },
         "q1_wrong_tasks": {
             "content": "# Not quite\n\nListing project tasks is done in the **Work Breakdown Structure (WBS)**, not the charter.\n\nThe project charter's primary purpose is to **formally authorize the project** and give the project manager authority.\n\n**Question 2 of 3**\n\nWhat does the \"triple constraint\" in project management refer to?",
             "level": 2,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 270,
+                "y": 300
+            },
             "choices": [
-                { "text": "Scope, Time, Cost", "next": "q2_correct" },
-                { "text": "People, Process, Technology", "next": "q2_wrong" },
-                { "text": "Plan, Do, Check", "next": "q2_wrong" }
+                {
+                    "text": "Scope, Time, Cost",
+                    "next": "q2_correct"
+                },
+                {
+                    "text": "People, Process, Technology",
+                    "next": "q2_wrong"
+                },
+                {
+                    "text": "Plan, Do, Check",
+                    "next": "q2_wrong"
+                }
             ],
             "resources": []
         },
         "q1_wrong_budget": {
             "content": "# Not quite\n\nWhile the charter may include a high-level budget estimate, detailed budget definition happens in the **project management plan**.\n\nThe project charter's primary purpose is to **formally authorize the project** and give the project manager authority.\n\n**Question 2 of 3**\n\nWhat does the \"triple constraint\" in project management refer to?",
             "level": 2,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 410,
+                "y": 300
+            },
             "choices": [
-                { "text": "Scope, Time, Cost", "next": "q2_correct" },
-                { "text": "People, Process, Technology", "next": "q2_wrong" },
-                { "text": "Plan, Do, Check", "next": "q2_wrong" }
+                {
+                    "text": "Scope, Time, Cost",
+                    "next": "q2_correct"
+                },
+                {
+                    "text": "People, Process, Technology",
+                    "next": "q2_wrong"
+                },
+                {
+                    "text": "Plan, Do, Check",
+                    "next": "q2_wrong"
+                }
             ],
             "resources": []
         },
         "q2_correct": {
             "content": "# Correct!\n\nThe triple constraint (also called the \"iron triangle\") refers to **Scope, Time, and Cost**. Changes to one typically affect the others.\n\n**Question 3 of 3**\n\nWho is primarily responsible for managing stakeholder expectations?",
             "level": 3,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 200,
+                "y": 420
+            },
             "choices": [
-                { "text": "The Project Manager", "next": "q3_correct" },
-                { "text": "The Project Sponsor", "next": "q3_wrong_sponsor" },
-                { "text": "The Team Lead", "next": "q3_wrong_lead" }
+                {
+                    "text": "The Project Manager",
+                    "next": "q3_correct"
+                },
+                {
+                    "text": "The Project Sponsor",
+                    "next": "q3_wrong_sponsor"
+                },
+                {
+                    "text": "The Team Lead",
+                    "next": "q3_wrong_lead"
+                }
             ],
             "resources": []
         },
         "q2_wrong": {
             "content": "# Not quite\n\nThe triple constraint (also called the \"iron triangle\") refers to **Scope, Time, and Cost** - the three key factors that constrain every project. Changes to one typically affect the others.\n\n**Question 3 of 3**\n\nWho is primarily responsible for managing stakeholder expectations?",
             "level": 3,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 340,
+                "y": 420
+            },
             "choices": [
-                { "text": "The Project Manager", "next": "q3_correct" },
-                { "text": "The Project Sponsor", "next": "q3_wrong_sponsor" },
-                { "text": "The Team Lead", "next": "q3_wrong_lead" }
+                {
+                    "text": "The Project Manager",
+                    "next": "q3_correct"
+                },
+                {
+                    "text": "The Project Sponsor",
+                    "next": "q3_wrong_sponsor"
+                },
+                {
+                    "text": "The Team Lead",
+                    "next": "q3_wrong_lead"
+                }
             ],
             "resources": []
         },
         "q3_correct": {
             "content": "# Correct!\n\nThe **Project Manager** is primarily responsible for managing stakeholder expectations through regular communication, status updates, and stakeholder engagement activities.\n\n## Quiz Complete!\n\nGreat job! You've demonstrated a solid understanding of project management fundamentals.",
             "level": 4,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 130,
+                "y": 540
+            },
             "choices": [],
             "resources": [
-                { "type": "link", "label": "PMBOK Guide Overview", "url": "https://www.pmi.org/pmbok-guide-standards" }
+                {
+                    "type": "link",
+                    "label": "PMBOK Guide Overview",
+                    "url": "https://www.pmi.org/pmbok-guide-standards"
+                }
             ]
         },
         "q3_wrong_sponsor": {
             "content": "# Not quite\n\nWhile the **Project Sponsor** has influence with stakeholders, the day-to-day management of stakeholder expectations is the **Project Manager's** responsibility.\n\n## Quiz Complete\n\nYou've completed the quiz. Consider reviewing stakeholder management concepts.",
             "level": 4,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 270,
+                "y": 540
+            },
             "choices": [],
             "resources": [
-                { "type": "link", "label": "Stakeholder Management Guide", "url": "https://www.pmi.org/learning/library" }
+                {
+                    "type": "link",
+                    "label": "Stakeholder Management Guide",
+                    "url": "https://www.pmi.org/learning/library"
+                }
             ]
         },
         "q3_wrong_lead": {
             "content": "# Not quite\n\nThe **Team Lead** manages the team's work, but stakeholder expectations are managed by the **Project Manager** who has the broader organizational view.\n\n## Quiz Complete\n\nYou've completed the quiz. Consider reviewing stakeholder management concepts.",
             "level": 4,
-            "position": { "x": 0, "y": 0 },
+            "position": {
+                "x": 410,
+                "y": 540
+            },
             "choices": [],
             "resources": [
-                { "type": "link", "label": "Stakeholder Management Guide", "url": "https://www.pmi.org/learning/library" }
+                {
+                    "type": "link",
+                    "label": "Stakeholder Management Guide",
+                    "url": "https://www.pmi.org/learning/library"
+                }
             ]
         }
     }

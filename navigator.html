@@ -14,35 +14,38 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif); background: var(--bg); min-height: 100vh; overflow-x: hidden; }
-        .slide-container { min-height: 100vh; display: flex; flex-direction: column; }
-        .slide-content { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 2rem; max-width: 900px; margin: 0 auto; width: 100%; }
-        .slide-content h1 { color: var(--text); font-size: 2.5rem; margin-bottom: 1.5rem; font-weight: 600; }
-        .slide-content h2 { color: var(--text); font-size: 1.5rem; margin-bottom: 1rem; font-weight: 500; }
-        .slide-content p { color: var(--text-secondary); font-size: 1.125rem; line-height: 1.7; margin-bottom: 1rem; }
-        .slide-content ul { color: var(--text-secondary); font-size: 1.125rem; line-height: 1.7; margin-bottom: 1rem; padding-left: 1.5rem; }
-        .slide-content li { margin-bottom: 0.5rem; }
-        .slide-content blockquote { border-left: 4px solid var(--accent); padding: 1rem; margin: 1.5rem 0; color: var(--text-secondary); font-style: italic; background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 0 8px 8px 0; }
+        .slide-container { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .slide-content { flex: 1; display: flex; flex-direction: column; padding: 0 2rem; max-width: 1200px; margin: 0 auto; width: 100%; min-height: 0; overflow: hidden; }
+        .content-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; min-height: 0; }
+        .content-inner { margin: auto 0; flex-shrink: 0; }
+        .slide-footer { flex-shrink: 0; padding-bottom: 0.5rem; }
+        .slide-content h1 { color: var(--text); font-size: 2rem; margin-bottom: 1rem; font-weight: 600; }
+        .slide-content h2 { color: var(--text); font-size: 1.25rem; margin-bottom: 0.75rem; font-weight: 500; }
+        .slide-content p { color: var(--text-secondary); font-size: 1rem; line-height: 1.5; margin-bottom: 0.75rem; }
+        .slide-content ul { color: var(--text-secondary); font-size: 1rem; line-height: 1.5; margin-bottom: 0.75rem; padding-left: 1.5rem; }
+        .slide-content li { margin-bottom: 0.35rem; }
+        .slide-content blockquote { border-left: 4px solid var(--accent); padding: 0.75rem 1rem; margin: 1rem 0; color: var(--text-secondary); font-style: italic; background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 0 8px 8px 0; }
         .slide-content strong { color: var(--text); font-weight: 600; }
         .slide-content em { color: var(--text-secondary); }
-        .choices-container { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; justify-content: flex-start; }
-        .choice-button { background: var(--choice-bg); color: var(--choice-text); border: none; padding: 1rem 1.5rem; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px color-mix(in srgb, var(--choice-bg) 30%, transparent); min-width: 180px; text-align: center; }
+        .choices-container { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; justify-content: flex-start; }
+        .choice-button { background: var(--choice-bg); color: var(--choice-text); border: none; padding: 0.75rem 1.25rem; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px color-mix(in srgb, var(--choice-bg) 30%, transparent); min-width: 160px; text-align: center; }
         .choice-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px color-mix(in srgb, var(--choice-bg) 40%, transparent); }
         .choice-button.visited { background: var(--visited-bg); color: var(--visited-text); }
         .choice-button.visited::after { content: ' ✓'; }
-        .choice-button.explored { background: var(--explored-bg); color: var(--explored-text); border: 2px solid var(--accent); }
-        .header-bar { display: flex; justify-content: space-between; align-items: center; padding: 1rem; width: 100%; }
+
+        .header-bar { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; width: 100%; flex-shrink: 0; }
         .scenario-title { color: var(--text); font-size: 1rem; font-weight: 500; max-width: 50%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .brand-header { display: flex; align-items: center; gap: 0.75rem; }
-        .progress-indicator { color: var(--text-muted); font-size: 0.875rem; padding: 1rem; }
+        .progress-indicator { color: var(--text-muted); font-size: 0.875rem; padding: 0.5rem 1rem; flex-shrink: 0; }
         .map-button { position: fixed; bottom: 1rem; right: 1rem; background: color-mix(in srgb, var(--accent) 10%, transparent); border: 1px solid var(--accent); color: var(--accent-hover); padding: 0.75rem 1.25rem; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 0.5rem; z-index: 100; }
         .map-button:hover { background: color-mix(in srgb, var(--accent) 20%, transparent); }
-        .restart-button { background: var(--restart-bg); color: var(--restart-text); border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; margin-top: 1rem; }
+        .restart-button { background: var(--success); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; margin-top: 0.75rem; }
         .restart-button:hover { transform: translateY(-2px); }
-        .terminal-badge { display: inline-block; background: var(--success); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; margin-bottom: 1rem; }
+        .terminal-badge { display: block; background: var(--restart-bg); color: var(--restart-text); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; margin-top: 1rem; margin-bottom: 0.5rem; width: 100%; text-align: center; flex-shrink: 0; }
         .back-button { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); background: var(--back-bg, #f97316); border: 1px solid var(--back-bg, #f97316); color: var(--back-text, #ffffff); padding: 0.5rem 1.25rem; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem; z-index: 50; }
         .back-button:hover { background: color-mix(in srgb, var(--back-bg, #f97316) 85%, black); border-color: color-mix(in srgb, var(--back-bg, #f97316) 85%, black); color: var(--back-text, #ffffff); }
         .back-button svg { width: 16px; height: 16px; }
-        .resources-section { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .resources-section { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
         .resources-title { color: var(--text); font-size: 0.875rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 800; }
         .resource-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent-hover); text-decoration: none; padding: 0.5rem 1rem; background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 6px; margin-right: 0.75rem; margin-bottom: 0.75rem; transition: all 0.3s ease; }
         .resource-link:hover { background: color-mix(in srgb, var(--accent) 15%, transparent); }
@@ -57,12 +60,11 @@
         .close-button:hover { background: #dc2626; }
         .map-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; background: #f3f4f6; }
         .map-footer { padding: 0.75rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); }
-        .tree-node { cursor: pointer; transition: all 0.3s ease; }
+        .tree-node { transition: all 0.3s ease; }
         .tree-node:hover { filter: brightness(1.2); }
         .tree-node.visited { cursor: pointer; }
-        .tree-node.not-visited { opacity: 0.7; cursor: default; }
+        .tree-node.not-visited { opacity: 0.7; cursor: pointer; }
         .tree-node.current { filter: brightness(1.1); }
-        .tree-node.dragging { cursor: grabbing; opacity: 0.8; }
         .loading { display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--text-secondary); font-size: 1.25rem; }
         .error { display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #ef4444; font-size: 1.25rem; flex-direction: column; gap: 1rem; }
         .brand-logo { height: 32px; width: auto; }
@@ -74,11 +76,13 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useRef, useCallback } = React;
+        const { useState, useEffect, useRef } = React;
 
+        // Module-level mutables: safe because the loading state blocks
+        // React render until all fetches complete. No race condition.
         let fontOptions = {};
         let defaultTheme = {};
-        let layoutConfig = { levelHeight: 120, nodeWidth: 140, nodeHeight: 40, padding: 60 };
+        let layoutConfig = { levelHeight: 120, nodeWidth: 140, nodeHeight: 44, padding: 60 };
 
         const loadGoogleFont = (fontKey) => {
             const font = fontOptions[fontKey];
@@ -86,7 +90,7 @@
             const fontName = font.name.replace(/ /g, '+');
             let link = document.getElementById('google-font-link');
             if (!link) { link = document.createElement('link'); link.id = 'google-font-link'; link.rel = 'stylesheet'; document.head.appendChild(link); }
-            link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@400;500;600;700&display=swap`;
+            link.href = `https://fonts.googleapis.com/css2?family=${fontName}:wght@400;500;600;700;800&display=swap`;
         };
 
         const applyTheme = (theme) => {
@@ -113,8 +117,7 @@
             root.style.setProperty('--choice-text', b.choiceText);
             root.style.setProperty('--visited-bg', b.visitedBackground);
             root.style.setProperty('--visited-text', b.visitedText);
-            root.style.setProperty('--explored-bg', b.exploredBackground);
-            root.style.setProperty('--explored-text', b.exploredText);
+
             root.style.setProperty('--restart-bg', b.restartBackground);
             root.style.setProperty('--restart-text', b.restartText);
             root.style.setProperty('--back-bg', b.backBackground);
@@ -137,7 +140,7 @@
         };
 
         // Use shared utilities from shared-utils.js
-        const { calculateNodeLevels, calculateAutoPositions, RESOURCE_ICONS, RESOURCE_LABELS, sanitizeUrl, ErrorBoundary } = window.ChoiceMapUtils;
+        const { calculateNodeLevels, calculateAutoPositions, RESOURCE_ICONS, RESOURCE_LABELS, sanitizeUrl, ErrorBoundary, getConnectionPath: sharedGetConnectionPath, getArrowPosition: sharedGetArrowPosition, getConnectionColor: sharedGetConnectionColor } = window.ChoiceMapUtils;
 
         // Wrapper for calculateAutoPositions to use local layoutConfig
         const calculateAutoPositionsWithConfig = (nodes, startNode) => {
@@ -150,7 +153,12 @@
                 const lines = text.split('\n');
                 const elements = [];
                 let currentList = [];
-                const processInline = (line) => line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<em>$1</em>');
+                const processInline = (line) => {
+                    const escaped = window.ChoiceMapUtils.escapeHtml(line);
+                    return escaped
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+                };
                 const flushList = () => { if (currentList.length > 0) { elements.push(<ul key={`list-${elements.length}`}>{currentList.map((item, i) => <li key={i} dangerouslySetInnerHTML={{ __html: processInline(item) }} />)}</ul>); currentList = []; } };
                 lines.forEach((line, index) => {
                     if (line.startsWith('# ')) { flushList(); elements.push(<h1 key={index} dangerouslySetInnerHTML={{ __html: processInline(line.slice(2)) }} />); }
@@ -167,8 +175,6 @@
         };
 
         const TreeMap = ({ scenarioData, nodes, visitedNodes, currentNode, onNodeClick, onClose, translations }) => {
-            const [draggingNode, setDraggingNode] = useState(null);
-            const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
             const [nodePositions, setNodePositions] = useState({});
             const [svgSize, setSvgSize] = useState({ width: 800, height: 600 });
             const svgRef = useRef(null);
@@ -189,77 +195,18 @@
                 setSvgSize({ width: Math.max(...allX, 400) + nodeWidth + padding, height: Math.max(...allY, 300) + nodeHeight + padding });
             }, [nodes, scenarioData.startNode]);
 
-            // CTRL+drag to move nodes
-            const handleMouseDown = (e, nodeId) => {
-                if (e.button !== 0) return;
-                if (!e.ctrlKey && !e.metaKey) return;
-                
-                e.stopPropagation();
-                e.preventDefault();
-                
-                const svg = svgRef.current;
-                const pt = svg.createSVGPoint();
-                pt.x = e.clientX; pt.y = e.clientY;
-                const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-                setDragOffset({ x: svgP.x - nodePositions[nodeId].x, y: svgP.y - nodePositions[nodeId].y });
-                setDraggingNode(nodeId);
-            };
-
-            // Double-click (without CTRL) to navigate to visited node
+            // Double-click to navigate to any node
             const handleNodeDoubleClick = (e, nodeId) => {
-                if (e.ctrlKey || e.metaKey || draggingNode) return;
-                if (visitedNodes.has(nodeId)) {
-                    onNodeClick(nodeId);
-                }
-            };
-
-            const handleMouseMove = useCallback((e) => {
-                if (!draggingNode) return;
-                const svg = svgRef.current;
-                if (!svg) return;
-                const pt = svg.createSVGPoint();
-                pt.x = e.clientX; pt.y = e.clientY;
-                const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
-                const newX = Math.max(nodeWidth/2, svgP.x - dragOffset.x);
-                const newY = Math.max(nodeHeight/2, svgP.y - dragOffset.y);
-                setNodePositions(prev => ({ ...prev, [draggingNode]: { x: newX, y: newY } }));
-                setSvgSize(prev => ({ width: Math.max(prev.width, newX + nodeWidth + padding), height: Math.max(prev.height, newY + nodeHeight + padding) }));
-            }, [draggingNode, dragOffset, nodeWidth, nodeHeight, padding]);
-
-            const handleMouseUp = useCallback(() => {
-                setDraggingNode(null);
-            }, []);
-
-            useEffect(() => {
-                if (draggingNode) {
-                    window.addEventListener('mousemove', handleMouseMove);
-                    window.addEventListener('mouseup', handleMouseUp);
-                    return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', handleMouseUp); };
-                }
-            }, [draggingNode, handleMouseMove, handleMouseUp]);
-
-            const handleResetLayout = () => {
-                const autoLayout = calculateAutoPositionsWithConfig(nodes, scenarioData.startNode);
-                setNodePositions(autoLayout.positions);
-                const allX = Object.values(autoLayout.positions).map(p => p.x);
-                const allY = Object.values(autoLayout.positions).map(p => p.y);
-                setSvgSize({ width: Math.max(...allX, 400) + nodeWidth + padding, height: Math.max(...allY, 300) + nodeHeight + padding });
+                onNodeClick(nodeId);
             };
 
             const connections = [];
-            // Calculate logical levels for loop detection
+            // Calculate logical levels for loop detection (reuse shared BFS)
+            const levelGroups = calculateNodeLevels(nodes, scenarioData.startNode);
             const nodeLevels = {};
-            const visited = new Set();
-            const queue = [{ id: scenarioData.startNode, level: 0 }];
-            while (queue.length > 0) {
-                const { id, level } = queue.shift();
-                if (visited.has(id) || !nodes[id]) continue;
-                visited.add(id);
-                nodeLevels[id] = level;
-                (nodes[id].choices || []).forEach(choice => {
-                    if (choice.next && !visited.has(choice.next)) queue.push({ id: choice.next, level: level + 1 });
-                });
-            }
+            Object.entries(levelGroups).forEach(([level, nodeIds]) => {
+                nodeIds.forEach(id => { nodeLevels[id] = parseInt(level); });
+            });
             
             Object.entries(nodes).forEach(([nodeId, node]) => {
                 if (node.choices && nodePositions[nodeId]) {
@@ -293,57 +240,24 @@
                 return nodeId;
             };
 
-            const getConnectionPath = (conn) => {
-                const x1 = conn.from.x, y1 = conn.from.y + nodeHeight / 2, x2 = conn.to.x, y2 = conn.to.y - nodeHeight / 2;
-                // Use logical structure for path type, not visual position
-                if (!conn.isLoop && !conn.isSameLevel) return { path: `M ${x1} ${y1} L ${x2} ${y2}`, type: 'line', x1, y1, x2, y2 };
-                const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
-                // For loops, curve goes above; direction depends on visual position
-                const visuallyBackward = conn.to.y < conn.from.y;
-                const curveOffset = conn.isLoop ? Math.max(80, Math.abs(conn.from.y - conn.to.y) * 0.3 + 60) : 50;
-                const curveDirection = x1 <= x2 ? 1 : -1;
-                const controlX = midX + (curveOffset * curveDirection * (conn.isLoop ? 1.5 : 1));
-                const controlY = visuallyBackward ? Math.min(y1, y2) - 30 : midY;
-                return { path: `M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`, type: 'bezier', x1, y1, x2, y2, cx: controlX, cy: controlY };
-            };
-
-            const getArrowPosition = (pathData) => {
-                if (pathData.type === 'line') {
-                    const mx = (pathData.x1 + pathData.x2) / 2, my = (pathData.y1 + pathData.y2) / 2;
-                    return { x: mx, y: my, angle: Math.atan2(pathData.y2 - pathData.y1, pathData.x2 - pathData.x1) * 180 / Math.PI };
-                }
-                const t = 0.5;
-                const mx = (1-t)*(1-t)*pathData.x1 + 2*(1-t)*t*pathData.cx + t*t*pathData.x2;
-                const my = (1-t)*(1-t)*pathData.y1 + 2*(1-t)*t*pathData.cy + t*t*pathData.y2;
-                const tx = 2*(1-t)*(pathData.cx - pathData.x1) + 2*t*(pathData.x2 - pathData.cx);
-                const ty = 2*(1-t)*(pathData.cy - pathData.y1) + 2*t*(pathData.y2 - pathData.cy);
-                return { x: mx, y: my, angle: Math.atan2(ty, tx) * 180 / Math.PI };
-            };
-
-            // Get connection color based on structure (loop, same level, forward)
-            const getConnectionColor = (conn) => {
-                // Use structure-based colors (same logic as scenario-editor)
-                if (conn.isLoop) return '#f59e0b'; // loop to ancestor - amber
-                if (conn.isSameLevel) return '#8b5cf6'; // same level - purple
-                // Forward connection - use theme color if visited, gray if not
-                return conn.visited ? 'var(--map-line-visited)' : '#d1d5db';
-            };
+            const getConnectionPathLocal = (conn) => sharedGetConnectionPath(conn, nodeHeight);
+            const getArrowPositionLocal = sharedGetArrowPosition;
+            const getConnectionColorLocal = sharedGetConnectionColor;
 
             return (
                 <div className="map-overlay">
                     <div className="map-header">
                         <h2>{translations.mapOf} {scenarioData.meta?.title || 'Scenario'}</h2>
                         <div className="map-toolbar">
-                            <button className="btn-secondary" onClick={handleResetLayout} title="Reset to automatic layout">↻ Auto Layout</button>
                             <button className="close-button" onClick={onClose}>X</button>
                         </div>
                     </div>
                     <div className="map-content">
-                        <svg ref={svgRef} width={svgSize.width} height={svgSize.height} style={{ display: 'block', margin: 'auto', cursor: draggingNode ? 'grabbing' : 'default', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
+                        <svg ref={svgRef} width={svgSize.width} height={svgSize.height} style={{ display: 'block', margin: 'auto', background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px' }}>
                             {connections.map((conn) => {
-                                const pathData = getConnectionPath(conn);
-                                const arrowPos = getArrowPosition(pathData);
-                                const color = getConnectionColor(conn);
+                                const pathData = getConnectionPathLocal(conn);
+                                const arrowPos = getArrowPositionLocal(pathData);
+                                const color = getConnectionColorLocal(conn);
                                 return (
                                     <g key={conn.key}>
                                         <path d={pathData.path} fill="none" stroke={color} strokeWidth={2} />
@@ -355,25 +269,23 @@
                                 if (!nodes[nodeId]) return null;
                                 const isVisited = visitedNodes.has(nodeId);
                                 const isCurrent = nodeId === currentNode;
-                                const isDragging = draggingNode === nodeId;
                                 let fill, stroke, textFill;
                                 if (isCurrent) { fill = 'var(--map-node-current)'; stroke = 'var(--map-node-current)'; textFill = 'var(--map-node-current-text)'; }
                                 else if (isVisited) { fill = 'var(--map-node-visited)'; stroke = 'var(--map-node-visited)'; textFill = 'var(--map-node-visited-text)'; }
                                 else { fill = 'var(--map-node-unvisited)'; stroke = 'var(--map-node-unvisited-border)'; textFill = 'var(--map-node-unvisited-text)'; }
                                 return (
-                                    <g key={nodeId} 
-                                       className={`tree-node ${isVisited ? 'visited' : 'not-visited'} ${isCurrent ? 'current' : ''} ${isDragging ? 'dragging' : ''}`}
-                                       style={{ cursor: isDragging ? 'grabbing' : (isVisited ? 'pointer' : 'default') }}
-                                       onMouseDown={(e) => handleMouseDown(e, nodeId)}
+                                    <g key={nodeId}
+                                       className={`tree-node ${isVisited ? 'visited' : 'not-visited'} ${isCurrent ? 'current' : ''}`}
+                                       style={{ cursor: 'pointer' }}
                                        onDoubleClick={(e) => handleNodeDoubleClick(e, nodeId)}>
-                                        <rect x={pos.x - nodeWidth/2 + 10} y={pos.y - nodeHeight/2} width={nodeWidth - 20} height={nodeHeight} rx={8} fill={fill} stroke={stroke} strokeWidth={2} style={{ filter: isDragging ? 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' : 'none' }} />
-                                        <text x={pos.x} y={pos.y + 4} textAnchor="middle" dominantBaseline="middle" fill={textFill} fontSize="11" fontWeight="500" style={{ pointerEvents: 'none', userSelect: 'none' }}>{getNodeLabel(nodeId)}</text>
+                                        <rect x={pos.x - nodeWidth/2 + 10} y={pos.y - nodeHeight/2} width={nodeWidth - 20} height={nodeHeight} rx={8} fill={fill} stroke={stroke} strokeWidth={2} />
+                                        <text x={pos.x} y={pos.y + 4} textAnchor="middle" dominantBaseline="middle" fill={textFill} fontSize="11" fontWeight="800" style={{ pointerEvents: 'none', userSelect: 'none' }}>{getNodeLabel(nodeId)}</text>
                                     </g>
                                 );
                             })}
                         </svg>
                     </div>
-                    <div className="map-footer">💡 Double-click visited nodes to navigate • CTRL+drag to reposition</div>
+                    <div className="map-footer">💡 Double-click on any node to go to that card</div>
                 </div>
             );
         };
@@ -395,8 +307,8 @@
                         const defaultsRes = await fetch('defaults.json?v=' + Date.now());
                         if (defaultsRes.ok) {
                             const defaults = await defaultsRes.json();
-                            if (defaults.fonts) fontOptions = defaults.fonts;
-                            if (defaults.theme) defaultTheme = defaults.theme;
+                            if (defaults.fontOptions) fontOptions = defaults.fontOptions;
+                            if (defaults.defaultTheme) defaultTheme = defaults.defaultTheme;
                             if (defaults.layout) layoutConfig = { ...layoutConfig, ...defaults.layout };
                         }
                         const configRes = await fetch('config.json?v=' + Date.now());
@@ -422,10 +334,26 @@
             }, []);
 
             const translations = { step: 'Step', restart: 'Start Over', endOfPath: 'End of this path', resources: 'Resources', viewMap: 'View Map', mapOf: 'Map of', back: 'Back', download: 'Download', openLink: 'Open', watchVideo: 'Watch', ...scenarioData?.translations };
-            const handleChoice = (nextNode) => { setVisitedNodes(prev => new Set([...prev, nextNode])); setHistory(prev => [...prev, nextNode]); setCurrentNode(nextNode); };
-            const handleBack = () => { if (history.length > 1) { const newHistory = history.slice(0, -1); setHistory(newHistory); setCurrentNode(newHistory[newHistory.length - 1]); } };
-            const handleRestart = () => { setCurrentNode(scenarioData.startNode); setVisitedNodes(new Set([scenarioData.startNode])); setHistory([scenarioData.startNode]); };
-            const handleMapNodeClick = (nodeId) => { setCurrentNode(nodeId); setHistory(prev => [...prev, nodeId]); setShowMap(false); };
+            const handleChoice = (nextNode) => { setVisitedNodes(prev => new Set([...prev, nextNode])); setHistory(prev => [...prev, nextNode]); setCurrentNode(nextNode); window.scrollTo(0, 0); };
+            const handleBack = () => { if (history.length > 1) { const newHistory = history.slice(0, -1); setHistory(newHistory); setCurrentNode(newHistory[newHistory.length - 1]); window.scrollTo(0, 0); } };
+            const handleRestart = () => { setCurrentNode(scenarioData.startNode); setVisitedNodes(new Set([scenarioData.startNode])); setHistory([scenarioData.startNode]); window.scrollTo(0, 0); };
+            const handleMapNodeClick = (nodeId) => {
+                setVisitedNodes(prev => new Set([...prev, nodeId]));
+                if (nodeId === scenarioData.startNode) {
+                    // Reset history when navigating to start
+                    setHistory([scenarioData.startNode]);
+                    setCurrentNode(scenarioData.startNode);
+                } else {
+                    setHistory(prev => {
+                        // Don't duplicate if already last in history
+                        if (prev[prev.length - 1] === nodeId) return prev;
+                        return [...prev, nodeId];
+                    });
+                    setCurrentNode(nodeId);
+                }
+                setShowMap(false);
+                window.scrollTo(0, 0);
+            };
 
             if (loading) return <div className="loading">Loading...</div>;
             if (error) return <div className="error"><span>Error: {error}</span></div>;
@@ -438,7 +366,7 @@
             const choices = node.choices || [];
             const resources = node.resources || [];
             const isTerminal = choices.length === 0;
-            const currentIndex = history.indexOf(currentNode) + 1;
+            const currentIndex = history.length;
 
             const getResourceIcon = (type) => RESOURCE_ICONS[type] || RESOURCE_ICONS.link;
             const getResourceLabel = (type) => {
@@ -454,17 +382,17 @@
                         <div className="brand-header">
                             {theme?.brand?.logo && (
                                 theme?.brand?.website
-                                    ? <a href={theme.brand.website} target="_blank" rel="noopener noreferrer"><img src={theme.brand.logo} alt="Logo" className="brand-logo" /></a>
-                                    : <img src={theme.brand.logo} alt="Logo" className="brand-logo" />
+                                    ? <a href={sanitizeUrl(theme.brand.website)} target="_blank" rel="noopener noreferrer"><img src={sanitizeUrl(theme.brand.logo)} alt="Logo" className="brand-logo" /></a>
+                                    : <img src={sanitizeUrl(theme.brand.logo)} alt="Logo" className="brand-logo" />
                             )}
                             {theme?.brand?.name && (
                                 theme?.brand?.website
-                                    ? <a href={theme.brand.website} target="_blank" rel="noopener noreferrer" className="brand-name">{theme.brand.name}</a>
+                                    ? <a href={sanitizeUrl(theme.brand.website)} target="_blank" rel="noopener noreferrer" className="brand-name">{theme.brand.name}</a>
                                     : <span className="brand-name">{theme.brand.name}</span>
                             )}
                         </div>
                     </div>
-                    {history.length > 1 && (
+                    {history.length > 1 && currentNode !== scenarioData.startNode && (
                         <button className="back-button" onClick={handleBack}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                             {translations.back}
@@ -472,31 +400,33 @@
                     )}
                     <div className="slide-content">
                         {isTerminal && <span className="terminal-badge">{translations.endOfPath}</span>}
-                        <MarkdownContent content={content} />
-                        {choices.length > 0 && (
-                            <div className="choices-container">
-                                {choices.map((choice, index) => {
-                                    const isVisited = visitedNodes.has(choice.next);
-                                    const allExplored = (scenarioData.nodes[choice.next]?.choices || []).every(c => visitedNodes.has(c.next));
-                                    return (
-                                        <button key={index} className={`choice-button ${isVisited ? (allExplored ? 'explored' : 'visited') : ''}`} onClick={() => handleChoice(choice.next)}>
+                        <div className="content-scroll">
+                            <div className="content-inner">
+                                <MarkdownContent content={content} />
+                            </div>
+                        </div>
+                        <div className="slide-footer">
+                            {choices.length > 0 && (
+                                <div className="choices-container">
+                                    {choices.map((choice, index) => (
+                                        <button key={index} className={`choice-button ${visitedNodes.has(choice.next) ? 'visited' : ''}`} onClick={() => handleChoice(choice.next)}>
                                             {getText(choice.text)}
                                         </button>
-                                    );
-                                })}
-                            </div>
-                        )}
-                        {isTerminal && <button className="restart-button" onClick={handleRestart}>{translations.restart}</button>}
-                        {resources.length > 0 && (
-                            <div className="resources-section">
-                                <div className="resources-title">{translations.resources}</div>
-                                {resources.map((res, i) => (
-                                    <a key={i} href={res.url} target="_blank" rel="noopener noreferrer" className="resource-link" download={res.type === 'download' ? true : undefined}>
-                                        {getResourceIcon(res.type)} {getText(res.label) || getResourceLabel(res.type)}
-                                    </a>
-                                ))}
-                            </div>
-                        )}
+                                    ))}
+                                </div>
+                            )}
+                            {isTerminal && <button className="restart-button" onClick={handleRestart}>{translations.restart}</button>}
+                            {resources.length > 0 && (
+                                <div className="resources-section">
+                                    <div className="resources-title">{translations.resources}</div>
+                                    {resources.map((res, i) => (
+                                        <a key={i} href={sanitizeUrl(res.url)} target="_blank" rel="noopener noreferrer" className="resource-link" download={res.type === 'download' ? true : undefined}>
+                                            {getResourceIcon(res.type)} {getText(res.label) || getResourceLabel(res.type)}
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <div className="progress-indicator">{translations.step} {currentIndex}</div>
                     <button className="map-button" onClick={() => setShowMap(true)}>🗺️ {translations.viewMap}</button>

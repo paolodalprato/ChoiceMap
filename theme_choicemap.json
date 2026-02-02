@@ -1,8 +1,8 @@
 {
     "brand": {
-        "name": "",
-        "logo": "",
-        "website": ""
+        "name": "My Brand",
+        "logo": "docs/Icon.png",
+        "website": "https://docs.ai-know.pro/choicemap-en/"
     },
     "typography": {
         "fontFamily": "system"
@@ -23,7 +23,6 @@
         "choiceText": "#ffffff",
         "visitedBackground": "#10b981",
         "visitedText": "#ffffff",
-
         "restartBackground": "#f59e0b",
         "restartText": "#ffffff",
         "backBackground": "#f97316",

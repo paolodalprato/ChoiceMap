@@ -77,9 +77,11 @@
         .legend-terminal { border-color: #f59e0b; background: #78350f; }
         .legend-selected { border-color: #818cf8; background: #3730a3; }
         .legend-orphan { border-color: #ef4444; background: #7f1d1d; }
+        .legend-multiselect { border-color: #ec4899; background: #9d174d; }
         .map-overlay-content { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 2rem; background: #f3f4f6; }
         .map-toolbar { display: flex; gap: 0.5rem; align-items: center; }
         .map-toolbar .btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .map-toolbar .separator { width: 1px; height: 24px; background: #d1d5db; margin: 0 0.25rem; }
         .draggable-node { cursor: pointer; }
         .draggable-node.dragging { cursor: grabbing; opacity: 0.8; }
     </style>
@@ -92,6 +94,8 @@
 
         // ============================================================
         // DEFAULT DATA (loaded from defaults.json)
+        // Module-level mutable: safe because React render is blocked by
+        // layoutLoaded state until fetch completes. No race condition.
         // ============================================================
         let layoutConfig = {
             levelHeight: 120,
@@ -110,13 +114,19 @@
             back: 'Back',
             download: 'Download',
             openLink: 'Open',
-            watchVideo: 'Watch'
+            watchVideo: 'Watch',
+            mapAlignH: 'Align H',
+            mapAlignV: 'Align V',
+            mapDistribH: 'Distrib H',
+            mapDistribV: 'Distrib V',
+            mapSelectLevel: 'Select Level',
+            mapAutoLayout: 'Auto Layout'
         };
         
         // ============================================================
         // SHARED UTILITIES (from shared-utils.js)
         // ============================================================
-        const { calculateNodeLevels, getEffectiveLevel, getNodeLevel, calculateAutoPositions, ErrorBoundary, sanitizeUrl, sanitizeNodeId } = window.ChoiceMapUtils;
+        const { calculateNodeLevels, getEffectiveLevel, getNodeLevel, calculateAutoPositions, ErrorBoundary, sanitizeUrl, sanitizeNodeId, getConnectionPath: sharedGetConnectionPath, getArrowPosition: sharedGetArrowPosition, getConnectionColor: sharedGetConnectionColor } = window.ChoiceMapUtils;
 
         // Wrapper for calculateAutoPositions to use local layoutConfig
         const calculateAutoPositionsWithConfig = (nodes, startNode) => {
@@ -126,15 +136,21 @@
         // ============================================================
         // INTERACTIVE TREE MAP OVERLAY COMPONENT
         // ============================================================
-        const TreeMapOverlay = ({ nodes, startNode, selectedNode, onSelectNode, onClose, fileName, onUpdateNodePosition }) => {
+        const TreeMapOverlay = ({ nodes, startNode, selectedNode, onSelectNode, onClose, fileName, onUpdateNodePosition, translations }) => {
+            const t = { ...defaultTranslations, ...translations };
             const [selectedConnection, setSelectedConnection] = useState(null);
             const [draggingNode, setDraggingNode] = useState(null);
             const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
             const [nodePositions, setNodePositions] = useState({});
             const [svgSize, setSvgSize] = useState({ width: 800, height: 600 });
+            const [multiSelectedNodes, setMultiSelectedNodes] = useState(new Set());
             const svgRef = useRef(null);
 
             const { nodeWidth, nodeHeight, padding } = layoutConfig;
+            const GRID_SIZE = 20; // Snap-to-grid size in pixels
+
+            // Snap value to grid
+            const snapToGrid = (value) => Math.round(value / GRID_SIZE) * GRID_SIZE;
 
             // Initialize positions from nodes or calculate auto positions
             useEffect(() => {
@@ -165,8 +181,27 @@
             const handleMouseDown = (e, nodeId) => {
                 if (e.button !== 0) return; // Only left click
                 
-                // Only start drag if CTRL (or CMD on Mac) is held
-                if (!e.ctrlKey && !e.metaKey) return;
+                // SHIFT+click for multi-select
+                if (e.shiftKey) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setMultiSelectedNodes(prev => {
+                        const newSet = new Set(prev);
+                        if (newSet.has(nodeId)) {
+                            newSet.delete(nodeId);
+                        } else {
+                            newSet.add(nodeId);
+                        }
+                        return newSet;
+                    });
+                    return;
+                }
+                
+                // Plain click: select this node (for Select Level, etc.)
+                if (!e.ctrlKey && !e.metaKey) {
+                    onSelectNode(nodeId);
+                    return;
+                }
                 
                 e.stopPropagation();
                 e.preventDefault();
@@ -205,8 +240,11 @@
                 pt.y = e.clientY;
                 const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
                 
-                const newX = Math.max(nodeWidth/2, svgP.x - dragOffset.x);
-                const newY = Math.max(nodeHeight/2, svgP.y - dragOffset.y);
+                // Calculate new position with snap-to-grid
+                const rawX = svgP.x - dragOffset.x;
+                const rawY = svgP.y - dragOffset.y;
+                const newX = Math.max(nodeWidth/2, snapToGrid(rawX));
+                const newY = Math.max(nodeHeight/2, snapToGrid(rawY));
                 
                 setNodePositions(prev => ({
                     ...prev,
@@ -218,7 +256,7 @@
                     width: Math.max(prev.width, newX + nodeWidth + padding),
                     height: Math.max(prev.height, newY + nodeHeight + padding)
                 }));
-            }, [draggingNode, dragOffset, nodeWidth, nodeHeight, padding]);
+            }, [draggingNode, dragOffset, nodeWidth, nodeHeight, padding, snapToGrid]);
 
             const handleMouseUp = useCallback(() => {
                 if (draggingNode && onUpdateNodePosition) {
@@ -258,6 +296,110 @@
                     width: Math.max(...allX, 400) + nodeWidth + padding,
                     height: Math.max(...allY, 300) + nodeHeight + padding
                 });
+                
+                // Clear multi-selection
+                setMultiSelectedNodes(new Set());
+            };
+
+            // Clear multi-selection
+            const handleClearSelection = () => {
+                setMultiSelectedNodes(new Set());
+            };
+
+            // Select nodes at same level as the first multi-selected node
+            const handleSelectSameLevel = () => {
+                if (multiSelectedNodes.size === 0) return;
+                const referenceNode = Array.from(multiSelectedNodes)[0];
+                const currentLevel = getNodeLevel(referenceNode, nodes, startNode).level;
+                const sameLevel = new Set();
+                Object.keys(nodes).forEach(nodeId => {
+                    if (getNodeLevel(nodeId, nodes, startNode).level === currentLevel) {
+                        sameLevel.add(nodeId);
+                    }
+                });
+                setMultiSelectedNodes(sameLevel);
+            };
+
+            // Align selected nodes horizontally (same X)
+            const handleAlignHorizontally = () => {
+                if (multiSelectedNodes.size < 2) return;
+
+                const selectedArray = Array.from(multiSelectedNodes);
+                const avgX = selectedArray.reduce((sum, id) => sum + nodePositions[id].x, 0) / selectedArray.length;
+                const snappedX = snapToGrid(avgX);
+
+                const newPositions = { ...nodePositions };
+                selectedArray.forEach(nodeId => {
+                    newPositions[nodeId] = { ...newPositions[nodeId], x: snappedX };
+                    if (onUpdateNodePosition) {
+                        onUpdateNodePosition(nodeId, newPositions[nodeId]);
+                    }
+                });
+                setNodePositions(newPositions);
+            };
+
+            // Align selected nodes vertically (same Y)
+            const handleAlignVertically = () => {
+                if (multiSelectedNodes.size < 2) return;
+
+                const selectedArray = Array.from(multiSelectedNodes);
+                const avgY = selectedArray.reduce((sum, id) => sum + nodePositions[id].y, 0) / selectedArray.length;
+                const snappedY = snapToGrid(avgY);
+
+                const newPositions = { ...nodePositions };
+                selectedArray.forEach(nodeId => {
+                    newPositions[nodeId] = { ...newPositions[nodeId], y: snappedY };
+                    if (onUpdateNodePosition) {
+                        onUpdateNodePosition(nodeId, newPositions[nodeId]);
+                    }
+                });
+                setNodePositions(newPositions);
+            };
+
+            // Distribute selected nodes horizontally with equal spacing
+            const handleDistributeHorizontally = () => {
+                if (multiSelectedNodes.size < 3) return;
+                
+                const selectedArray = Array.from(multiSelectedNodes);
+                // Sort by current X position
+                selectedArray.sort((a, b) => nodePositions[a].x - nodePositions[b].x);
+                
+                const minX = nodePositions[selectedArray[0]].x;
+                const maxX = nodePositions[selectedArray[selectedArray.length - 1]].x;
+                const spacing = (maxX - minX) / (selectedArray.length - 1);
+                
+                const newPositions = { ...nodePositions };
+                selectedArray.forEach((nodeId, index) => {
+                    const newX = snapToGrid(minX + spacing * index);
+                    newPositions[nodeId] = { ...newPositions[nodeId], x: newX };
+                    if (onUpdateNodePosition) {
+                        onUpdateNodePosition(nodeId, newPositions[nodeId]);
+                    }
+                });
+                setNodePositions(newPositions);
+            };
+
+            // Distribute selected nodes vertically with equal spacing
+            const handleDistributeVertically = () => {
+                if (multiSelectedNodes.size < 3) return;
+                
+                const selectedArray = Array.from(multiSelectedNodes);
+                // Sort by current Y position
+                selectedArray.sort((a, b) => nodePositions[a].y - nodePositions[b].y);
+                
+                const minY = nodePositions[selectedArray[0]].y;
+                const maxY = nodePositions[selectedArray[selectedArray.length - 1]].y;
+                const spacing = (maxY - minY) / (selectedArray.length - 1);
+                
+                const newPositions = { ...nodePositions };
+                selectedArray.forEach((nodeId, index) => {
+                    const newY = snapToGrid(minY + spacing * index);
+                    newPositions[nodeId] = { ...newPositions[nodeId], y: newY };
+                    if (onUpdateNodePosition) {
+                        onUpdateNodePosition(nodeId, newPositions[nodeId]);
+                    }
+                });
+                setNodePositions(newPositions);
             };
 
             // Build connections with metadata
@@ -289,63 +431,14 @@
             const isTerminal = (nodeId) => !nodes[nodeId]?.choices || nodes[nodeId].choices.length === 0;
             const isOrphan = (nodeId) => getNodeLevel(nodeId, nodes, startNode).level === 0;
             
-            // Generate path for connection (straight line, arc for loops/same level)
-            const getConnectionPath = (conn) => {
-                const x1 = conn.from.x;
-                const y1 = conn.from.y + nodeHeight / 2;
-                const x2 = conn.to.x;
-                const y2 = conn.to.y - nodeHeight / 2;
+            // Map connection utilities from shared-utils
+            const getConnectionPath = (conn) => sharedGetConnectionPath(conn, nodeHeight);
+            const getArrowPosition = sharedGetArrowPosition;
 
-                // Forward connection (not a loop, not same level) - straight line
-                if (!conn.isLoop && !conn.isSameLevel) {
-                    return { path: `M ${x1} ${y1} L ${x2} ${y2}`, type: 'line', x1, y1, x2, y2 };
-                }
-
-                // Loop or same level - curved arc
-                const midX = (x1 + x2) / 2;
-                const midY = (y1 + y2) / 2;
-
-                // For curve direction, use visual position
-                const visuallyBackward = conn.to.y < conn.from.y;
-                let curveOffset;
-                if (conn.isLoop) {
-                    const yDiff = Math.abs(conn.from.y - conn.to.y);
-                    curveOffset = Math.max(80, yDiff * 0.3 + 60);
-                } else {
-                    curveOffset = 50;
-                }
-
-                const curveDirection = x1 <= x2 ? 1 : -1;
-                const controlX = midX + (curveOffset * curveDirection * (conn.isLoop ? 1.5 : 1));
-                const controlY = visuallyBackward ? Math.min(y1, y2) - 30 : midY;
-
-                return { path: `M ${x1} ${y1} Q ${controlX} ${controlY} ${x2} ${y2}`, type: 'bezier', x1, y1, x2, y2, cx: controlX, cy: controlY };
-            };
-
-            // Calculate midpoint and angle for arrow placement
-            const getArrowPosition = (pathData) => {
-                if (pathData.type === 'line') {
-                    const mx = (pathData.x1 + pathData.x2) / 2;
-                    const my = (pathData.y1 + pathData.y2) / 2;
-                    const angle = Math.atan2(pathData.y2 - pathData.y1, pathData.x2 - pathData.x1) * 180 / Math.PI;
-                    return { x: mx, y: my, angle };
-                } else {
-                    const t = 0.5;
-                    const mx = (1-t)*(1-t)*pathData.x1 + 2*(1-t)*t*pathData.cx + t*t*pathData.x2;
-                    const my = (1-t)*(1-t)*pathData.y1 + 2*(1-t)*t*pathData.cy + t*t*pathData.y2;
-                    const tx = 2*(1-t)*(pathData.cx - pathData.x1) + 2*t*(pathData.x2 - pathData.cx);
-                    const ty = 2*(1-t)*(pathData.cy - pathData.y1) + 2*t*(pathData.y2 - pathData.cy);
-                    const angle = Math.atan2(ty, tx) * 180 / Math.PI;
-                    return { x: mx, y: my, angle };
-                }
-            };
-            
-            // Get connection color based on logical structure
+            // Editor-specific: adds selected/hovered highlight on top of shared colors
             const getConnectionColor = (conn, isSelected, isHovered) => {
                 if (isSelected || isHovered) return '#6366f1';
-                if (conn.isLoop) return '#f59e0b'; // logical loop (to ancestor) - amber
-                if (conn.isSameLevel) return '#8b5cf6'; // same logical level - purple
-                return '#d1d5db'; // forward - gray
+                return sharedGetConnectionColor(conn);
             };
             
             return (
@@ -357,10 +450,25 @@
                             <span><span className="legend-dot legend-terminal"></span> Terminal</span>
                             <span><span className="legend-dot legend-selected"></span> Selected</span>
                             <span><span className="legend-dot legend-orphan"></span> Orphan</span>
+                            <span><span className="legend-dot legend-multiselect"></span> Multi-select</span>
                         </div>
                         <div className="map-toolbar">
+                            {multiSelectedNodes.size > 0 && (
+                                <>
+                                    <span className="text-muted" style={{ fontSize: '0.75rem' }}>{multiSelectedNodes.size} selected</span>
+                                    <button className="btn btn-secondary" onClick={handleClearSelection} title="Clear selection">✕</button>
+                                    <div className="separator"></div>
+                                    <button className="btn btn-secondary" onClick={handleAlignHorizontally} title="Align horizontally (same X)" disabled={multiSelectedNodes.size < 2}>═ {t.mapAlignH}</button>
+                                    <button className="btn btn-secondary" onClick={handleAlignVertically} title="Align vertically (same Y)" disabled={multiSelectedNodes.size < 2}>║ {t.mapAlignV}</button>
+                                    <div className="separator"></div>
+                                    <button className="btn btn-secondary" onClick={handleDistributeHorizontally} title="Distribute horizontally (equal X spacing)" disabled={multiSelectedNodes.size < 3}>⟷ {t.mapDistribH}</button>
+                                    <button className="btn btn-secondary" onClick={handleDistributeVertically} title="Distribute vertically (equal Y spacing)" disabled={multiSelectedNodes.size < 3}>↕ {t.mapDistribV}</button>
+                                    <div className="separator"></div>
+                                    <button className="btn btn-secondary" onClick={handleSelectSameLevel} title="Select all nodes at same level">{t.mapSelectLevel}</button>
+                                </>
+                            )}
                             <button className="btn btn-secondary" onClick={handleResetLayout} title="Reset to automatic layout">
-                                ↻ Auto Layout
+                                ↻ {t.mapAutoLayout}
                             </button>
                             <button className="btn btn-close" onClick={onClose}>X</button>
                         </div>
@@ -425,17 +533,19 @@
                                 );
                             })}
                             
-                            {/* Nodes - click to select, CTRL+drag to move */}
+                            {/* Nodes - click to select, SHIFT+click for multi-select, CTRL+drag to move */}
                             {Object.entries(nodePositions).map(([nodeId, pos]) => {
                                 if (!nodes[nodeId]) return null;
                                 const isSelected = nodeId === selectedNode;
+                                const isMultiSelected = multiSelectedNodes.has(nodeId);
                                 const isStart = nodeId === startNode;
                                 const isEnd = isTerminal(nodeId);
                                 const orphan = isOrphan(nodeId);
                                 const isDragging = draggingNode === nodeId;
                                 
                                 let fill = '#f3f4f6', stroke = '#9ca3af', sw = 2, textFill = '#374151';
-                                if (isSelected) { fill = '#e0e7ff'; stroke = '#818cf8'; sw = 3; textFill = '#3730a3'; }
+                                if (isMultiSelected) { fill = '#fce7f3'; stroke = '#ec4899'; sw = 3; textFill = '#9d174d'; }
+                                else if (isSelected) { fill = '#e0e7ff'; stroke = '#818cf8'; sw = 3; textFill = '#3730a3'; }
                                 if (isStart) stroke = '#10b981'; else if (orphan) stroke = '#ef4444'; else if (isEnd) stroke = '#f59e0b';
                                 
                                 const content = nodes[nodeId]?.content || '';
@@ -490,7 +600,7 @@
                         </svg>
                     </div>
                     <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '0.8rem', color: '#6b7280' }}>
-                        💡 Double-click to edit • CTRL+drag to reposition • Positions are saved automatically
+                        💡 Double-click to edit • CTRL+drag to reposition (snaps to grid) • SHIFT+click to multi-select • Positions saved automatically
                     </div>
                 </div>
             );
@@ -579,29 +689,27 @@
                                         <div className="modal-header"><h3>Create New Node</h3><button className="btn btn-close" onClick={onClose} style={{ padding: '0.25rem 0.5rem' }}>✕</button></div>
                     <div className="form-group">
                         <label className="form-label">
-                            Node ID <span style={{ color: '#ef4444' }}>*</span>
+                            Node ID <span className="required-star">*</span>
                         </label>
                         <input
                             type="text"
-                            className="form-input"
                             value={nodeId}
                             onChange={(e) => { setNodeId(e.target.value); setErrors(prev => ({ ...prev, id: '' })); }}
-                            style={errors.id ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
+                            className={errors.id ? 'form-input input-error' : 'form-input'}
                         />
-                        {errors.id && <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><span>⚠️</span> {errors.id}</div>}
+                        {errors.id && <div style={errorMessageStyle}><span>⚠️</span> {errors.id}</div>}
                     </div>
                     <div className="form-group">
                         <label className="form-label">
-                            Node content <span style={{ color: '#ef4444' }}>*</span>
+                            Node content <span className="required-star">*</span>
                         </label>
                         <textarea
-                            className="form-input"
+                            className={errors.content ? 'form-input input-error' : 'form-input'}
                             rows={4}
                             value={content}
                             onChange={(e) => { setContent(e.target.value); setErrors(prev => ({ ...prev, content: '' })); }}
-                            style={errors.content ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
                         />
-                        {errors.content && <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><span>⚠️</span> {errors.content}</div>}
+                        {errors.content && <div style={errorMessageStyle}><span>⚠️</span> {errors.content}</div>}
                     </div>
                     <div className="form-group">
                         <label className="form-label">Level</label>
@@ -624,6 +732,35 @@
         );
     };
         
+        // ============================================================
+        // SHARED UI HELPERS
+        // ============================================================
+
+        let _nextId = 1;
+        const generateId = () => '__id_' + (_nextId++) + '_' + Math.random().toString(36).slice(2, 7);
+
+        /** Ensure every item in an array has a stable _id */
+        const ensureIds = (items) => {
+            if (!items) return [];
+            return items.map(item => item._id ? item : { ...item, _id: generateId() });
+        };
+
+        const errorMessageStyle = { color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' };
+
+        /**
+         * Get border style for editor items based on validation state
+         * @param {boolean} hasErrors - Whether any validation errors exist
+         * @param {boolean} hasUnsavedChanges - Whether there are unsaved changes
+         * @param {boolean} isComplete - Whether all required fields are filled
+         * @returns {Object} - React inline style object
+         */
+        const getBorderStyle = (hasErrors, hasUnsavedChanges, isComplete) => {
+            if (hasErrors) return { borderColor: '#ef4444' };
+            if (hasUnsavedChanges) return { borderColor: '#f59e0b', boxShadow: '0 0 0 2px rgba(245, 158, 11, 0.2)' };
+            if (isComplete) return { borderColor: '#10b981' };
+            return {};
+        };
+
         // ============================================================
         // CHOICE EDITOR COMPONENT
         // ============================================================
@@ -711,21 +848,13 @@
                 }
             };
 
-            // Determine border style based on state
-            const getBorderStyle = () => {
-                if (errors.text || errors.target) return { borderColor: '#ef4444' };
-                if (hasUnsavedChanges) return { borderColor: '#f59e0b', boxShadow: '0 0 0 2px rgba(245, 158, 11, 0.2)' };
-                if (isComplete) return { borderColor: '#10b981' };
-                return {};
-            };
-
             return (
-                <div className="choice-item" style={getBorderStyle()}>
+                <div className="choice-item" style={getBorderStyle(!!(errors.text || errors.target), hasUnsavedChanges, isComplete)}>
                     <div className="choice-header">
                         <span className="choice-number">
                             Choice {index + 1}
-                            {hasUnsavedChanges && <span style={{ color: '#f59e0b', marginLeft: '0.5rem', fontSize: '0.7rem' }}>● unsaved</span>}
-                            {isComplete && !hasUnsavedChanges && <span style={{ color: '#10b981', marginLeft: '0.5rem', fontSize: '0.7rem' }}>✓</span>}
+                            {hasUnsavedChanges && <span className="text-warning status-indicator">● unsaved</span>}
+                            {isComplete && !hasUnsavedChanges && <span className="text-success status-indicator">✓</span>}
                         </span>
                         <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
                             <button className="btn btn-secondary" onClick={onMoveUp} disabled={isFirst} style={{ padding: '0.15rem 0.4rem', fontSize: '0.75rem', opacity: isFirst ? 0.3 : 1, cursor: isFirst ? 'default' : 'pointer' }} title="Move up">▲</button>
@@ -735,38 +864,36 @@
                     </div>
                     <div className="form-group">
                         <label className="form-label">
-                            Button Text <span style={{ color: '#ef4444' }}>*</span>
+                            Button Text <span className="required-star">*</span>
                         </label>
                         <input
                             type="text"
-                            className="form-input"
+                            className={errors.text ? 'form-input input-error' : 'form-input'}
                             value={localText}
                             onChange={handleTextChange}
-                            style={errors.text ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
                             placeholder="Enter button text"
                         />
                         {errors.text && (
-                            <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <div style={errorMessageStyle}>
                                 <span>⚠️</span> {errors.text}
                             </div>
                         )}
                     </div>
                     <div className="form-group">
                         <label className="form-label">
-                            Target Node <span style={{ color: '#ef4444' }}>*</span>
+                            Target Node <span className="required-star">*</span>
                         </label>
                         <select
-                            className="form-select"
+                            className={errors.target ? 'form-select input-error' : 'form-select'}
                             value={localTarget}
                             onChange={handleTargetChange}
-                            style={errors.target ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
                         >
                             <option value="">-- Select target --</option>
                             <option value="__CREATE__" style={{ fontWeight: 'bold', color: '#10b981' }}>+ Create new node...</option>
                             {nodeIds.filter(id => id !== parentNodeId && !usedTargets.includes(id)).map(id => <option key={id} value={id}>{id}</option>)}
                         </select>
                         {errors.target && (
-                            <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <div style={errorMessageStyle}>
                                 <span>⚠️</span> {errors.target}
                             </div>
                         )}
@@ -844,38 +971,34 @@
                 setErrors(newErrors);
 
                 if (!hasError) {
-                    onChange({ ...resource, type: localType, url: localUrl.trim(), label: localLabel.trim() });
+                    const safeUrl = sanitizeUrl(localUrl.trim());
+                    if (!safeUrl) {
+                        setErrors(prev => ({ ...prev, url: 'Invalid or unsafe URL' }));
+                        return;
+                    }
+                    onChange({ ...resource, type: localType, url: safeUrl, label: localLabel.trim() });
                 }
             };
 
-            // Determine border style based on state
-            const getBorderStyle = () => {
-                if (errors.type || errors.url || errors.label) return { borderColor: '#ef4444' };
-                if (hasUnsavedChanges) return { borderColor: '#f59e0b', boxShadow: '0 0 0 2px rgba(245, 158, 11, 0.2)' };
-                if (isComplete) return { borderColor: '#10b981' };
-                return {};
-            };
-
             return (
-                <div className="resource-item" style={getBorderStyle()}>
+                <div className="resource-item" style={getBorderStyle(!!(errors.type || errors.url || errors.label), hasUnsavedChanges, isComplete)}>
                     <div className="resource-header">
                         <span className="choice-number">
                             Resource {index + 1}
-                            {hasUnsavedChanges && <span style={{ color: '#f59e0b', marginLeft: '0.5rem', fontSize: '0.7rem' }}>● unsaved</span>}
-                            {isComplete && !hasUnsavedChanges && <span style={{ color: '#10b981', marginLeft: '0.5rem', fontSize: '0.7rem' }}>✓</span>}
+                            {hasUnsavedChanges && <span className="text-warning status-indicator">● unsaved</span>}
+                            {isComplete && !hasUnsavedChanges && <span className="text-success status-indicator">✓</span>}
                         </span>
                         <button className="btn btn-danger" onClick={onRemove} style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>REMOVE</button>
                     </div>
                     <div className="form-row">
                         <div className="form-group">
                             <label className="form-label">
-                                Type <span style={{ color: '#ef4444' }}>*</span>
+                                Type <span className="required-star">*</span>
                             </label>
                             <select
-                                className="form-select"
+                                className={errors.type ? 'form-select input-error' : 'form-select'}
                                 value={localType}
                                 onChange={handleTypeChange}
-                                style={errors.type ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
                             >
                                 <option value="">-- Select type --</option>
                                 <option value="link">Link</option>
@@ -883,25 +1006,24 @@
                                 <option value="video">Video</option>
                             </select>
                             {errors.type && (
-                                <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <div style={errorMessageStyle}>
                                     <span>⚠️</span> {errors.type}
                                 </div>
                             )}
                         </div>
                         <div className="form-group">
                             <label className="form-label">
-                                URL <span style={{ color: '#ef4444' }}>*</span>
+                                URL <span className="required-star">*</span>
                             </label>
                             <input
                                 type="text"
-                                className="form-input"
+                                className={errors.url ? 'form-input input-error' : 'form-input'}
                                 value={localUrl}
                                 onChange={handleUrlChange}
-                                style={errors.url ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
                                 placeholder="https://..."
                             />
                             {errors.url && (
-                                <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <div style={errorMessageStyle}>
                                     <span>⚠️</span> {errors.url}
                                 </div>
                             )}
@@ -909,18 +1031,17 @@
                     </div>
                     <div className="form-group">
                         <label className="form-label">
-                            Label <span style={{ color: '#ef4444' }}>*</span>
+                            Label <span className="required-star">*</span>
                         </label>
                         <input
                             type="text"
-                            className="form-input"
+                            className={errors.label ? 'form-input input-error' : 'form-input'}
                             value={localLabel}
                             onChange={handleLabelChange}
-                            style={errors.label ? { borderColor: '#ef4444', boxShadow: '0 0 0 2px rgba(239, 68, 68, 0.2)' } : {}}
                             placeholder="Resource description"
                         />
                         {errors.label && (
-                            <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                            <div style={errorMessageStyle}>
                                 <span>⚠️</span> {errors.label}
                             </div>
                         )}
@@ -1013,12 +1134,12 @@
                 onUpdateNode(nodeId, { ...node, level: newLevel });
             };
             const updateChoice = (i, c) => { const nc = [...(node.choices || [])]; nc[i] = c; onUpdateNode(nodeId, { ...node, choices: nc }); };
-            const addChoice = () => onUpdateNode(nodeId, { ...node, choices: [...(node.choices || []), { text: '', next: '' }] });
+            const addChoice = () => onUpdateNode(nodeId, { ...node, choices: [...(node.choices || []), { text: '', next: '', _id: generateId() }] });
             const removeChoice = (i) => onUpdateNode(nodeId, { ...node, choices: (node.choices || []).filter((_, idx) => idx !== i) });
             const moveChoiceUp = (i) => { if (i <= 0) return; const nc = [...(node.choices || [])]; [nc[i - 1], nc[i]] = [nc[i], nc[i - 1]]; onUpdateNode(nodeId, { ...node, choices: nc }); };
             const moveChoiceDown = (i) => { const nc = [...(node.choices || [])]; if (i >= nc.length - 1) return; [nc[i], nc[i + 1]] = [nc[i + 1], nc[i]]; onUpdateNode(nodeId, { ...node, choices: nc }); };
             const updateResource = (i, r) => { const nr = [...(node.resources || [])]; nr[i] = r; onUpdateNode(nodeId, { ...node, resources: nr }); };
-            const addResource = () => onUpdateNode(nodeId, { ...node, resources: [...(node.resources || []), { type: 'link', label: '', url: '' }] });
+            const addResource = () => onUpdateNode(nodeId, { ...node, resources: [...(node.resources || []), { type: 'link', label: '', url: '', _id: generateId() }] });
             const removeResource = (i) => onUpdateNode(nodeId, { ...node, resources: (node.resources || []).filter((_, idx) => idx !== i) });
 
             return (
@@ -1086,14 +1207,14 @@
 
                     <div className="form-section">
                         <h3>🔀 Choices ({(node.choices || []).length})</h3>
-                        {(node.choices || []).map((choice, i) => <ChoiceEditor key={i} choice={choice} index={i} nodeIds={nodeIds} parentNodeId={nodeId} nodes={nodes} startNode={startNode} siblingChoices={node.choices || []} onChange={(c) => updateChoice(i, c)} onRemove={() => removeChoice(i)} onMoveUp={() => moveChoiceUp(i)} onMoveDown={() => moveChoiceDown(i)} isFirst={i === 0} isLast={i === (node.choices || []).length - 1} onCreateNode={onCreateNode} />)}
+                        {(node.choices || []).map((choice, i) => <ChoiceEditor key={choice._id || i} choice={choice} index={i} nodeIds={nodeIds} parentNodeId={nodeId} nodes={nodes} startNode={startNode} siblingChoices={node.choices || []} onChange={(c) => updateChoice(i, c)} onRemove={() => removeChoice(i)} onMoveUp={() => moveChoiceUp(i)} onMoveDown={() => moveChoiceDown(i)} isFirst={i === 0} isLast={i === (node.choices || []).length - 1} onCreateNode={onCreateNode} />)}
                         <button className="btn btn-success" onClick={addChoice}>+ Add Choice</button>
                         {(node.choices || []).length === 0 && <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginTop: '0.5rem', textAlign: 'center' }}>No choices = terminal node</p>}
                     </div>
 
                     <div className="form-section">
                         <h3>📎 Resources ({(node.resources || []).length})</h3>
-                        {(node.resources || []).map((r, i) => <ResourceEditor key={i} resource={r} index={i} onChange={(res) => updateResource(i, res)} onRemove={() => removeResource(i)} />)}
+                        {(node.resources || []).map((r, i) => <ResourceEditor key={r._id || i} resource={r} index={i} onChange={(res) => updateResource(i, res)} onRemove={() => removeResource(i)} />)}
                         <button className="btn btn-success" onClick={addResource}>+ Add Resource</button>
                     </div>
                 </div>
@@ -1155,17 +1276,42 @@
             const [showSidebar, setShowSidebar] = useState(true);
             const [fileName, setFileName] = useState(null);
             const [layoutLoaded, setLayoutLoaded] = useState(false);
+            const [saveWarnings, setSaveWarnings] = useState(null);
             const fileInputRef = useRef(null);
 
-            // Load layout configuration from defaults.json
+            // Load defaults.json (layout) and config.json (scenario to open)
             useEffect(() => {
-                fetch('defaults.json?v=' + Date.now())
+                const cacheBuster = '?v=' + Date.now();
+                fetch('defaults.json' + cacheBuster)
                     .then(res => res.ok ? res.json() : null)
                     .then(data => {
                         if (data?.layout) {
                             layoutConfig = { ...layoutConfig, ...data.layout };
                         }
-                        setLayoutLoaded(true);
+                        return fetch('config.json' + cacheBuster);
+                    })
+                    .then(res => res.ok ? res.json() : null)
+                    .then(config => {
+                        if (!config?.scenario) {
+                            setLayoutLoaded(true);
+                            return;
+                        }
+                        return fetch(config.scenario + cacheBuster)
+                            .then(res => {
+                                if (!res.ok) throw new Error('Not found');
+                                return res.json();
+                            })
+                            .then(data => {
+                                // Assign stable _id to choices and resources
+                                Object.keys(data.nodes).forEach(id => {
+                                    data.nodes[id].choices = ensureIds(data.nodes[id].choices);
+                                    data.nodes[id].resources = ensureIds(data.nodes[id].resources);
+                                });
+                                setScenario(data);
+                                setSelectedNode(data.startNode || Object.keys(data.nodes)[0]);
+                                setFileName(config.scenario);
+                                setLayoutLoaded(true);
+                            });
                     })
                     .catch(() => setLayoutLoaded(true));
             }, []);
@@ -1195,6 +1341,11 @@
                     reader.onload = (ev) => {
                         try {
                             const data = JSON.parse(ev.target.result);
+                            // Assign stable _id to choices and resources
+                            Object.keys(data.nodes).forEach(id => {
+                                data.nodes[id].choices = ensureIds(data.nodes[id].choices);
+                                data.nodes[id].resources = ensureIds(data.nodes[id].resources);
+                            });
                             setScenario(data);
                             setSelectedNode(data.startNode || Object.keys(data.nodes)[0]);
                             setHasChanges(false);
@@ -1205,26 +1356,63 @@
                 e.target.value = '';
             };
             
-            const handleSave = () => {
-                // Apply auto-layout positions to nodes with placeholder values (0,0)
+            // Collect warnings for incomplete choices/resources across all nodes
+            const collectSaveWarnings = () => {
+                const warnings = [];
+                Object.keys(scenario.nodes).forEach(nodeId => {
+                    const node = scenario.nodes[nodeId];
+                    const nodeTitle = (node.content || '').match(/^#\s+(.+)$/m)?.[1] || nodeId;
+
+                    (node.choices || []).forEach((choice, i) => {
+                        const hasText = choice.text && choice.text.trim();
+                        const hasTarget = !!choice.next;
+                        if (!hasText && !hasTarget) {
+                            warnings.push(`Node "${nodeTitle}": Choice ${i + 1} — missing text and target`);
+                        } else if (!hasText) {
+                            warnings.push(`Node "${nodeTitle}": Choice ${i + 1} — missing text`);
+                        } else if (!hasTarget) {
+                            warnings.push(`Node "${nodeTitle}": Choice ${i + 1} — missing target`);
+                        }
+                    });
+
+                    (node.resources || []).forEach((res, i) => {
+                        const missing = [];
+                        if (!res.type) missing.push('type');
+                        if (!res.url || !res.url.trim()) missing.push('URL');
+                        if (!res.label || !res.label.trim()) missing.push('label');
+                        if (missing.length > 0) {
+                            warnings.push(`Node "${nodeTitle}": Resource ${i + 1} — missing ${missing.join(', ')}`);
+                        }
+                    });
+                });
+                return warnings;
+            };
+
+            // Execute the actual save (filter incomplete items, download JSON)
+            const executeSave = () => {
                 const { positions } = calculateAutoPositionsWithConfig(scenario.nodes, scenario.startNode);
                 const nodesWithPositions = {};
                 Object.keys(scenario.nodes).forEach(id => {
                     const node = scenario.nodes[id];
-                    // Filter out incomplete choices (missing text or target)
-                    const validChoices = (node.choices || []).filter(c => c.text && c.text.trim() && c.next);
-                    // Filter out incomplete resources (missing type, url, or label)
-                    const validResources = (node.resources || []).filter(r => r.type && r.url && r.url.trim() && r.label && r.label.trim());
+                    // Filter out incomplete choices and strip internal _id
+                    const validChoices = (node.choices || [])
+                        .filter(c => c.text && c.text.trim() && c.next)
+                        .map(({ _id, ...rest }) => rest);
+                    // Filter out incomplete resources and strip internal _id
+                    const validResources = (node.resources || [])
+                        .filter(r => r.type && r.url && r.url.trim() && r.label && r.label.trim())
+                        .map(({ _id, ...rest }) => rest);
                     // Update position if it's a placeholder (0,0) or undefined
                     const pos = node.position;
                     if (!pos || (pos.x === 0 && pos.y === 0)) {
-                        nodesWithPositions[id] = { ...node, choices: validChoices, resources: validResources, position: { x: positions[id].x, y: positions[id].y } };
+                        const autoPos = positions[id] || { x: 0, y: 0 };
+                        nodesWithPositions[id] = { ...node, choices: validChoices, resources: validResources, position: { x: autoPos.x, y: autoPos.y } };
                     } else {
                         nodesWithPositions[id] = { ...node, choices: validChoices, resources: validResources };
                     }
                 });
                 const scenarioToSave = { ...scenario, nodes: nodesWithPositions };
-                
+
                 const saveName = fileName || 'scenario.json';
                 const json = JSON.stringify(scenarioToSave, null, 4);
                 const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
@@ -1233,6 +1421,16 @@
                 a.href = url; a.download = saveName; a.click();
                 URL.revokeObjectURL(url);
                 setHasChanges(false);
+                setSaveWarnings(null);
+            };
+
+            const handleSave = () => {
+                const warnings = collectSaveWarnings();
+                if (warnings.length === 0) {
+                    executeSave();
+                } else {
+                    setSaveWarnings(warnings);
+                }
             };
             
             const handleNew = () => {
@@ -1314,16 +1512,40 @@
                     </div>
                     
                     {showMetaEditor && <MetaEditor meta={scenario.meta} translations={scenario.translations || {}} onUpdate={handleUpdateMeta} onClose={() => setShowMetaEditor(false)} />}
+
+                    {saveWarnings && (
+                        <div className="modal-overlay">
+                            <div className="modal-content" style={{ maxWidth: '550px' }}>
+                                <div className="modal-header">
+                                    <h3>Incomplete items found</h3>
+                                    <button className="btn btn-close" onClick={() => setSaveWarnings(null)} style={{ padding: '0.25rem 0.5rem' }}>✕</button>
+                                </div>
+                                <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
+                                    The following items are incomplete and will be removed from the saved file:
+                                </p>
+                                <ul style={{ listStyle: 'disc', paddingLeft: '1.5rem', marginBottom: '1.25rem', maxHeight: '300px', overflowY: 'auto' }}>
+                                    {saveWarnings.map((w, i) => (
+                                        <li key={i} style={{ color: '#b45309', fontSize: '0.85rem', marginBottom: '0.35rem' }}>{w}</li>
+                                    ))}
+                                </ul>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button className="btn btn-primary" onClick={executeSave}>Save anyway</button>
+                                    <button className="btn btn-danger" onClick={() => setSaveWarnings(null)}>Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     
                     {showMap && (
-                        <TreeMapOverlay 
-                            nodes={scenario.nodes} 
-                            startNode={scenario.startNode} 
-                            selectedNode={selectedNode} 
-                            onSelectNode={setSelectedNode} 
-                            onClose={() => setShowMap(false)} 
+                        <TreeMapOverlay
+                            nodes={scenario.nodes}
+                            startNode={scenario.startNode}
+                            selectedNode={selectedNode}
+                            onSelectNode={setSelectedNode}
+                            onClose={() => setShowMap(false)}
                             fileName={fileName}
                             onUpdateNodePosition={handleUpdateNodePosition}
+                            translations={scenario.translations}
                         />
                     )}
 

@@ -4,23 +4,38 @@
 
 ChoiceMap transforms complex workflows into interactive experiences. Instead of reading a document from start to finish, users navigate through a decision tree where each choice opens a different path. Perfect for process documentation, corporate training, troubleshooting guides, compliance flows, and interactive storytelling.
 
-👉 **[Try the live demo](https://paolodalprato.github.io/ChoiceMap/navigator.html)**
+👉 **[Try the live demo](https://paolodalprato.github.io/ChoiceMap/navigator.html)** — The demo is a ChoiceMap scenario that explains ChoiceMap itself: an interactive guide to the framework's architecture, tools, and workflow.
 
 ## 📥 Installation
 
+Choose a folder on your computer where you want to install ChoiceMap (e.g., `C:\Projects`, `~/Sites`, or any directory you prefer). All project files will be placed there.
+
+### Option A: Git Clone
+
+**Prerequisites**: [Git](https://git-scm.com/) must be installed.
+
 ```bash
+cd /path/to/your/folder
 git clone https://github.com/paolodalprato/ChoiceMap.git
 cd ChoiceMap
 ```
 
-Then start a local server (see [Quick Start](#-quick-start) below).
+### Option B: Download ZIP
+
+1. Go to [github.com/paolodalprato/ChoiceMap](https://github.com/paolodalprato/ChoiceMap)
+2. Click the green **Code** button, then **Download ZIP**
+3. Extract the ZIP into your chosen folder
+
+Both methods produce the same result. Then start a local server (see [Quick Start](#-quick-start) below).
 
 ## ✨ Features
 
 - **Interactive Decision Trees**: Create multi-path narratives where user choices shape the journey
-- **Visual Journey Map**: Real-time tree visualization with double-click navigation and CTRL/CMD+drag repositioning
+- **Visual Journey Map**: Real-time tree visualization showing current position and visited paths
 - **Semantic Loop Coloring**: Connection colors based on logical hierarchy, not visual position — loops stay orange even after repositioning nodes
 - **Manual Level Override**: Set explicit levels for nodes to control hierarchy and ensure correct loop detection in complex scenarios
+- **Snap-to-Grid Positioning**: Node positions snap to a 20px grid for clean, aligned layouts (Scenario Editor)
+- **Multi-Select and Alignment**: Select multiple nodes with SHIFT+click, align horizontally/vertically, distribute evenly (Scenario Editor)
 - **Simple JSON Format**: Plain strings for all content, no complex structures
 - **JSON-Based Content**: Easy-to-edit scenario files, no coding required for content changes
 - **Visual Scenario Editor**: Dedicated tool for creating and managing scenarios
@@ -46,21 +61,25 @@ Then start a local server (see [Quick Start](#-quick-start) below).
 
 ```
 ChoiceMap/
-├── config.json                 # Configuration (scenario + theme files)
-├── defaults.json               # Shared defaults (fonts, theme fallbacks)
-├── navigator.html              # Main navigator engine
-├── scenario-editor.html        # Visual editor for creating scenarios
-├── theme-editor.html           # Visual editor for customizing themes
-├── theme.json                  # Theme configuration (colors, branding)
-├── scenario-quiz.json          # Example: quiz with correct/wrong feedback
-├── scenario-workflow.json      # Example: customer support escalation
-├── scenario-sample.json        # Template: narrative with multiple paths
-├── start-navigator.bat         # Quick start for navigator (Windows)
-├── start-scenario-editor.bat   # Quick start for scenario editor (Windows)
-├── start-theme-editor.bat      # Quick start for theme editor (Windows)
-├── README.md                   # This file
-├── LICENSE                     # MIT License
-└── docs/                       # Folder for downloadable resources
+├── config.json                      # Configuration (scenario + theme files)
+├── defaults.json                    # Shared defaults (fonts, theme fallbacks, layout)
+├── navigator.html                   # Main navigator engine
+├── scenario-editor.html             # Visual editor for creating scenarios
+├── theme-editor.html                # Visual editor for customizing themes
+├── shared-utils.js                  # Shared utilities (sanitization, node calculations, SVG helpers, ErrorBoundary)
+├── shared-styles.css                # Common styles shared across the editor interfaces
+├── scenario-choicemap-guide.json    # Default: interactive guide to ChoiceMap itself
+├── scenario-quiz.json               # Example: quiz with correct/wrong feedback
+├── scenario-workflow.json           # Example: customer support escalation
+├── scenario-sample.json             # Template: narrative with multiple paths
+├── theme_choicemap.json             # Theme for the ChoiceMap guide scenario
+├── theme.json                       # Theme configuration (colors, branding)
+├── start-navigator.bat              # Quick start for navigator (Windows)
+├── start-scenario-editor.bat        # Quick start for scenario editor (Windows)
+├── start-theme-editor.bat           # Quick start for theme editor (Windows)
+├── README.md                        # This file
+├── LICENSE                          # MIT License
+└── docs/                            # Folder for downloadable resources
     └── (your PDF, DOC files)
 ```
 
@@ -98,8 +117,8 @@ The `config.json` file controls which scenario and theme to load:
 
 ```json
 {
-    "scenario": "scenario-sample.json",
-    "theme": "theme.json",
+    "scenario": "scenario-choicemap-guide.json",
+    "theme": "theme_choicemap.json",
     "showCredits": true
 }
 ```
@@ -124,11 +143,16 @@ http://localhost:8000/scenario-editor.html
 
 ### Editor Features
 
-- **Welcome Screen**: Start with a new scenario or open an existing file
+- **Auto-Load**: On startup, automatically loads the scenario specified in `config.json`
 - **Node List View**: See all nodes with their level and status (START, END, orphan)
 - **Collapsible Sidebar**: Hide the node list to maximize editing space
 - **Visual Map View**: Interactive tree visualization of your scenario
 - **Manual Level Override**: Set explicit levels for nodes to control hierarchy and map positioning
+- **Snap-to-Grid**: Node positions automatically snap to a 20px grid when dragging (CTRL+drag)
+- **Multi-Select**: SHIFT+click to select multiple nodes for batch operations
+- **Alignment Tools**: Align selected nodes horizontally or vertically with one click
+- **Distribution Tools**: Distribute 3+ selected nodes with equal spacing
+- **Select Level**: Quickly select all nodes at the same hierarchical level
 - **Inline Node Creation**: Create new nodes directly from the choice dropdown
 - **Choice Text Validation**: The editor requires button text when creating nodes (prevents invisible choices)
 - **Node Creation Validation**: Both Node ID and Node content are required when creating new nodes (prevents incomplete nodes)
@@ -141,8 +165,8 @@ http://localhost:8000/scenario-editor.html
 
 ### Workflow
 
-1. Start the local server and open the editor
-2. Click **New Scenario** or **Open File** to load an existing JSON
+1. Start the local server and open the editor (it auto-loads the scenario from `config.json`)
+2. Or click **New** for a blank scenario, or **Open** to load a different JSON file
 3. Click **Settings** to define scenario metadata (title, description, author)
 4. Select a node from the sidebar to edit it
 5. Add choices with **+ Add Choice** — reorder them with the ▲/▼ buttons
@@ -176,6 +200,23 @@ The Map view displays your scenario as a visual tree. Connection colors indicate
 Colors are based on **logical hierarchy** (node levels), not visual position. This means loops stay orange even if you reposition nodes with CTRL+drag.
 
 The map canvas (white area) is **dynamic**: it automatically expands when you drag nodes beyond its right or bottom edges. This allows scenarios of any size without fixed boundaries.
+
+### Node Positioning Tools
+
+The Scenario Editor provides several tools for precise node positioning:
+
+| Tool | How to use | Description |
+|------|------------|-------------|
+| **CTRL+drag** | Hold CTRL and drag a node | Reposition with snap-to-grid (20px) |
+| **SHIFT+click** | Hold SHIFT and click nodes | Add/remove nodes from multi-selection |
+| **Select Level** | Click button in toolbar | Select all nodes at the same level as current node |
+| **Align H** | Select 2+ nodes, click button | Align nodes horizontally (same Y coordinate) |
+| **Align V** | Select 2+ nodes, click button | Align nodes vertically (same X coordinate) |
+| **Distrib H** | Select 3+ nodes, click button | Distribute nodes with equal horizontal spacing |
+| **Distrib V** | Select 3+ nodes, click button | Distribute nodes with equal vertical spacing |
+| **Auto Layout** | Click button | Reset all nodes to automatic positioning |
+
+Multi-selected nodes display a pink border. The selection count appears in the toolbar when nodes are selected.
 
 ### Manual Level Override
 
@@ -412,6 +453,16 @@ For multiple training modules, create separate folders with independent config f
     frameborder="0">
 </iframe>
 ```
+
+## 🔄 ChoiceMap on ChoiceMap
+
+The default scenario (`scenario-choicemap-guide.json`) is a self-describing interactive guide: a ChoiceMap scenario that explains ChoiceMap itself. It walks users through the framework's architecture, tools, file structure, and workflow using the same decision-tree format that ChoiceMap provides.
+
+This serves two purposes:
+- **Documentation**: an interactive alternative to reading the README linearly
+- **Live example**: a real-world scenario demonstrating features like multi-path navigation, resources, loop handling, and theming
+
+The [live demo](https://paolodalprato.github.io/ChoiceMap/navigator.html) runs this scenario with a dedicated theme (`theme_choicemap.json`).
 
 ## 📋 Technical Details
 
