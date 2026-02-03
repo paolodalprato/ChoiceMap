@@ -611,10 +611,10 @@
         // ============================================================
         const createEmptyScenario = () => {
             return {
-                meta: { title: 'New Scenario', description: '', author: '' },
+                meta: { title: '[Your Scenario Title]', description: '[Brief description of this scenario]', author: '[Your Name]' },
                 translations: { ...defaultTranslations },
                 startNode: 'start',
-                nodes: { start: { content: '# Welcome\n\nEdit this content.', level: 1, position: { x: 0, y: 0 }, choices: [], resources: [] } }
+                nodes: { start: { content: '# [Your First Node Title]\n\nReplace this text with your content. Use Markdown for formatting.\n\nThen add choices below to connect to other nodes.', level: 1, position: { x: 0, y: 0 }, choices: [], resources: [] } }
             };
         };
         
